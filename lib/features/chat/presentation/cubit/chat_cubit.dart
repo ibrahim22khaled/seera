@@ -19,6 +19,7 @@ class ChatCubit extends Cubit<ChatState> {
   final List<ChatSession> _sessions = [];
   String _currentSessionId = '';
   String? _currentField; // To track what we are validating
+  String _selectedLocale = 'ar-EG'; // Default to Egyptian Arabic
 
   ChatCubit({
     required ChatService aiService,
@@ -43,6 +44,7 @@ class ChatCubit extends Cubit<ChatState> {
       _currentSessionId =
           prefs.getString('current_session_id') ??
           (_sessions.isNotEmpty ? _sessions.first.id : '');
+      _selectedLocale = prefs.getString('selected_locale') ?? 'ar-EG';
     } else {
       // Migrate old history if exists
       final oldHistory = prefs.getStringList('chat_history') ?? [];
@@ -74,6 +76,7 @@ class ChatCubit extends Cubit<ChatState> {
         sessions: List.from(_sessions),
         currentSessionId: _currentSessionId,
         currentField: _currentField,
+        selectedLocale: _selectedLocale,
       ),
     );
     _detectCurrentField();
@@ -84,6 +87,7 @@ class ChatCubit extends Cubit<ChatState> {
     final sessionsJson = _sessions.map((s) => jsonEncode(s.toJson())).toList();
     await prefs.setStringList('chat_sessions', sessionsJson);
     await prefs.setString('current_session_id', _currentSessionId);
+    await prefs.setString('selected_locale', _selectedLocale);
   }
 
   Future<void> createNewSession() async {
@@ -101,9 +105,10 @@ class ChatCubit extends Cubit<ChatState> {
         sessions: List.from(_sessions),
         currentSessionId: _currentSessionId,
         currentField: _currentField,
+        selectedLocale: _selectedLocale,
       ),
     );
-    _currentField = 'jobType';
+    _currentField = 'name';
   }
 
   Future<void> switchSession(String sessionId) async {
@@ -115,6 +120,7 @@ class ChatCubit extends Cubit<ChatState> {
         sessions: List.from(_sessions),
         currentSessionId: _currentSessionId,
         currentField: _currentField,
+        selectedLocale: _selectedLocale,
       ),
     );
     await _saveSessions();
@@ -139,7 +145,7 @@ class ChatCubit extends Cubit<ChatState> {
       (s) => s.id == _currentSessionId,
     );
     if (currentSession.messages.isEmpty) {
-      _currentField = 'jobType';
+      _currentField = 'name';
       return;
     }
     final lastAiMessage = currentSession.messages
@@ -211,6 +217,7 @@ class ChatCubit extends Cubit<ChatState> {
             sessions: List.from(_sessions),
             currentSessionId: _currentSessionId,
             currentField: _currentField,
+            selectedLocale: _selectedLocale,
           ),
         );
         await _saveSessions();
@@ -236,6 +243,7 @@ class ChatCubit extends Cubit<ChatState> {
         sessions: List.from(_sessions),
         currentSessionId: _currentSessionId,
         currentField: _currentField,
+        selectedLocale: _selectedLocale,
       ),
     );
     await _saveSessions();
@@ -253,6 +261,7 @@ class ChatCubit extends Cubit<ChatState> {
           sessions: List.from(_sessions),
           currentSessionId: _currentSessionId,
           currentField: _currentField,
+          selectedLocale: _selectedLocale,
         ),
       );
       await _saveSessions();
@@ -265,6 +274,7 @@ class ChatCubit extends Cubit<ChatState> {
           sessions: List.from(_sessions),
           currentSessionId: _currentSessionId,
           currentField: _currentField,
+          selectedLocale: _selectedLocale,
         ),
       );
     }
@@ -289,6 +299,7 @@ class ChatCubit extends Cubit<ChatState> {
             sessions: List.from(_sessions),
             currentSessionId: _currentSessionId,
             currentField: _currentField,
+            selectedLocale: _selectedLocale,
           ),
         );
         await _saveSessions();
@@ -302,6 +313,7 @@ class ChatCubit extends Cubit<ChatState> {
             sessions: List.from(_sessions),
             currentSessionId: _currentSessionId,
             currentField: _currentField,
+            selectedLocale: _selectedLocale,
           ),
         );
         await _saveSessions();
@@ -314,6 +326,7 @@ class ChatCubit extends Cubit<ChatState> {
           sessions: List.from(_sessions),
           currentSessionId: _currentSessionId,
           currentField: _currentField,
+          selectedLocale: _selectedLocale,
         ),
       );
     }
@@ -341,6 +354,7 @@ class ChatCubit extends Cubit<ChatState> {
             sessions: List.from(_sessions),
             currentSessionId: _currentSessionId,
             currentField: _currentField,
+            selectedLocale: _selectedLocale,
           ),
         );
       } catch (e) {
@@ -353,6 +367,7 @@ class ChatCubit extends Cubit<ChatState> {
             sessions: List.from(_sessions),
             currentSessionId: _currentSessionId,
             currentField: _currentField,
+            selectedLocale: _selectedLocale,
           ),
         );
       }
@@ -361,7 +376,7 @@ class ChatCubit extends Cubit<ChatState> {
 
     // Start listening
     try {
-      print('Attempting to start listening...');
+      print('Attempting to start listening with locale: $_selectedLocale');
 
       final available = await _voiceService.startListening((text) {
         print('Voice result received: $text');
@@ -371,7 +386,7 @@ class ChatCubit extends Cubit<ChatState> {
           // Send the message
           sendMessage(text);
         }
-      });
+      }, localeId: _selectedLocale);
 
       print('Voice service available: $available');
 
@@ -383,6 +398,7 @@ class ChatCubit extends Cubit<ChatState> {
             sessions: List.from(_sessions),
             currentSessionId: _currentSessionId,
             currentField: _currentField,
+            selectedLocale: _selectedLocale,
           ),
         );
       } else {
@@ -394,6 +410,7 @@ class ChatCubit extends Cubit<ChatState> {
             sessions: List.from(_sessions),
             currentSessionId: _currentSessionId,
             currentField: _currentField,
+            selectedLocale: _selectedLocale,
           ),
         );
       }
@@ -418,6 +435,7 @@ class ChatCubit extends Cubit<ChatState> {
           sessions: List.from(_sessions),
           currentSessionId: _currentSessionId,
           currentField: _currentField,
+          selectedLocale: _selectedLocale,
         ),
       );
     }
@@ -440,17 +458,16 @@ class ChatCubit extends Cubit<ChatState> {
           history.contains('مسمى') ||
           history.contains('عنوان') ||
           history.contains('job');
-      final hasSummary =
-          history.contains('ملخص') || history.contains('summary');
 
-      if (!hasName || !hasEmail || !hasPhone || !hasJobTitle || !hasSummary) {
+      if (!hasName || !hasEmail || !hasPhone || !hasJobTitle) {
         emit(
           ChatError(
-            'لسه محتاجين نجمع باقي البيانات الأساسية (الاسم، البريد، الهاتف، المسمى الوظيفي، والملخص) عشان نقدر نعمل الـ CV.',
+            'لسه محتاجين نجمع باقي البيانات الأساسية (الاسم، البريد، الهاتف، المسمى الوظيفي) عشان نقدر نعمل الـ CV.',
             List.from(currentMessages),
             sessions: List.from(_sessions),
             currentSessionId: _currentSessionId,
             currentField: _currentField,
+            selectedLocale: _selectedLocale,
           ),
         );
         return;
@@ -461,6 +478,7 @@ class ChatCubit extends Cubit<ChatState> {
           sessions: List.from(_sessions),
           currentSessionId: _currentSessionId,
           currentField: _currentField,
+          selectedLocale: _selectedLocale,
         ),
       );
       final jsonString = await _aiService.generateCV(currentMessages);
@@ -481,6 +499,7 @@ class ChatCubit extends Cubit<ChatState> {
           sessions: List.from(_sessions),
           currentSessionId: _currentSessionId,
           currentField: _currentField,
+          selectedLocale: _selectedLocale,
         ),
       );
     } catch (e) {
@@ -491,6 +510,7 @@ class ChatCubit extends Cubit<ChatState> {
           sessions: List.from(_sessions),
           currentSessionId: _currentSessionId,
           currentField: _currentField,
+          selectedLocale: _selectedLocale,
         ),
       );
     }
@@ -509,6 +529,7 @@ class ChatCubit extends Cubit<ChatState> {
           sessions: List.from(_sessions),
           currentSessionId: _currentSessionId,
           currentField: _currentField,
+          selectedLocale: _selectedLocale,
         ),
       );
 
@@ -526,6 +547,7 @@ class ChatCubit extends Cubit<ChatState> {
           sessions: List.from(_sessions),
           currentSessionId: _currentSessionId,
           currentField: _currentField,
+          selectedLocale: _selectedLocale,
         ),
       );
       await _saveSessions();
@@ -537,8 +559,27 @@ class ChatCubit extends Cubit<ChatState> {
           sessions: List.from(_sessions),
           currentSessionId: _currentSessionId,
           currentField: _currentField,
+          selectedLocale: _selectedLocale,
         ),
       );
     }
+  }
+
+  Future<void> updateLocale(String locale) async {
+    _selectedLocale = locale;
+    await _voiceService.setLocale(locale);
+    final currentSession = _sessions.firstWhere(
+      (s) => s.id == _currentSessionId,
+    );
+    emit(
+      ChatLoaded(
+        List.from(currentSession.messages),
+        sessions: List.from(_sessions),
+        currentSessionId: _currentSessionId,
+        currentField: _currentField,
+        selectedLocale: _selectedLocale,
+      ),
+    );
+    await _saveSessions();
   }
 }

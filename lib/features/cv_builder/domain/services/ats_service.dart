@@ -4,62 +4,87 @@ class AtsService {
   static String generatePlainTextCv(CVModel data) {
     final buffer = StringBuffer();
 
-    // Full Name
-    buffer.writeln(data.fullName.toUpperCase());
+    /// HEADER
+    buffer.writeln(data.fullName);
+    buffer.writeln(data.jobTitle);
+    buffer.writeln('${data.city}, ${data.country}');
+    buffer.writeln('Email: ${data.email} | Phone: ${data.phone}');
     buffer.writeln();
 
-    // Professional Summary
-    buffer.writeln('Professional Summary');
-    buffer.writeln(data.summary);
-    buffer.writeln();
+    /// SUMMARY
+    if (data.summary.isNotEmpty) {
+      buffer.writeln('Summary');
+      buffer.writeln(data.summary.trim());
+      buffer.writeln();
+    }
 
-    // Experience
+    /// SKILLS
+    if (data.skills.isNotEmpty) {
+      buffer.writeln('Skills');
+      buffer.writeln(data.skills.join(', '));
+      buffer.writeln();
+    }
+
+    /// EXPERIENCE
     if (data.experience.isNotEmpty) {
       buffer.writeln('Experience');
-      for (var exp in data.experience) {
-        buffer.writeln('${exp.jobTitle} – ${exp.company}');
+      for (final exp in data.experience) {
+        buffer.writeln('${exp.jobTitle} | ${exp.company} | ${exp.location}');
         buffer.writeln(exp.duration);
-        for (var responsibility in exp.responsibilities) {
-          buffer.writeln('- $responsibility');
+
+        for (final bullet in exp.responsibilities) {
+          buffer.writeln('- ${_normalizeBullet(bullet)}');
+        }
+
+        if (exp.portfolioItems.isNotEmpty) {
+          buffer.writeln('  Portfolio:');
+          for (final item in exp.portfolioItems) {
+            buffer.writeln('  • $item');
+          }
         }
         buffer.writeln();
       }
     }
 
-    // Skills
-    if (data.skills.isNotEmpty) {
-      buffer.writeln('Skills');
-      for (var skill in data.skills) {
-        buffer.writeln('- $skill');
+    /// PROJECTS / PORTFOLIO (IMAGES → LINKS)
+    if (data.attachments.isNotEmpty) {
+      buffer.writeln('Projects');
+      for (final item in data.attachments) {
+        buffer.writeln('- ${item.title}: ${item.url}');
       }
       buffer.writeln();
     }
 
-    // Education (if any, not explicitly in model but good for ATS)
-    // Languages
+    /// EDUCATION
+    if (data.education.isNotEmpty) {
+      buffer.writeln('Education');
+      for (final edu in data.education) {
+        buffer.writeln('${edu.degree} | ${edu.institution} | ${edu.dateRange}');
+      }
+      buffer.writeln();
+    }
+
+    /// LANGUAGES
     if (data.languages.isNotEmpty) {
       buffer.writeln('Languages');
-      for (var lang in data.languages) {
-        buffer.writeln('- ${lang.name}: ${lang.level}');
+      for (final lang in data.languages) {
+        buffer.writeln('${lang.name} – ${lang.level}');
       }
       buffer.writeln();
     }
 
-    // Work Samples
-    if (data.attachments.isNotEmpty) {
-      buffer.writeln('Work Samples');
-      for (var link in data.attachments) {
-        buffer.writeln('- $link');
-      }
-      buffer.writeln();
+    /// ADDITIONAL INFO
+    if (data.additionalInfo.isNotEmpty) {
+      buffer.writeln('Additional Information');
+      buffer.writeln(data.additionalInfo);
     }
 
-    // Contact Information
-    buffer.writeln('Contact Information');
-    buffer.writeln('Email: ${data.email}');
-    buffer.writeln('Phone: ${data.phone}');
-    buffer.writeln('Location: ${data.city}, ${data.country}');
+    return buffer.toString().trim();
+  }
 
-    return buffer.toString();
+  static String _normalizeBullet(String text) {
+    final t = text.trim();
+    if (t.isEmpty) return t;
+    return t[0].toUpperCase() + t.substring(1);
   }
 }

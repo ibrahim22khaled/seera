@@ -6,8 +6,9 @@ import 'package:permission_handler/permission_handler.dart';
 abstract class VoiceService {
   Future<void> speak(String text);
   Future<void> stopSpeaking();
-  Future<bool> startListening(Function(String) onResult);
+  Future<bool> startListening(Function(String) onResult, {String? localeId});
   Future<void> stopListening();
+  Future<void> setLocale(String localeId);
   bool get isListening;
 }
 
@@ -32,6 +33,16 @@ class VoiceServiceImpl implements VoiceService {
   }
 
   @override
+  Future<void> setLocale(String localeId) async {
+    try {
+      await _flutterTts.setLanguage(localeId);
+      debugPrint('TTS locale set to: $localeId');
+    } catch (e) {
+      debugPrint('Error setting TTS locale: $e');
+    }
+  }
+
+  @override
   Future<void> speak(String text) async {
     try {
       if (text.isNotEmpty) {
@@ -52,7 +63,10 @@ class VoiceServiceImpl implements VoiceService {
   }
 
   @override
-  Future<bool> startListening(Function(String) onResult) async {
+  Future<bool> startListening(
+    Function(String) onResult, {
+    String? localeId,
+  }) async {
     try {
       debugPrint('Requesting microphone permission...');
 
@@ -89,12 +103,16 @@ class VoiceServiceImpl implements VoiceService {
         'Available locales: ${locales.map((l) => l.localeId).join(", ")}',
       );
 
-      // Find the best locale for Arabic
-      var arabicLocale = locales.firstWhere(
-        (l) => l.localeId.startsWith('ar'),
-        orElse: () => locales.first,
+      // Find the best locale
+      String targetLocale = localeId ?? 'ar-EG';
+      var selectedLocale = locales.firstWhere(
+        (l) => l.localeId.toLowerCase() == targetLocale.toLowerCase(),
+        orElse: () => locales.firstWhere(
+          (l) => l.localeId.startsWith(targetLocale.split('-').first),
+          orElse: () => locales.first,
+        ),
       );
-      debugPrint('Selected locale: ${arabicLocale.localeId}');
+      debugPrint('Selected locale: ${selectedLocale.localeId}');
 
       // Start listening
       debugPrint('Starting to listen...');
@@ -107,7 +125,7 @@ class VoiceServiceImpl implements VoiceService {
             onResult(result.recognizedWords);
           }
         },
-        localeId: arabicLocale.localeId,
+        localeId: selectedLocale.localeId,
         listenFor: const Duration(seconds: 30),
         pauseFor: const Duration(seconds: 5),
         listenOptions: stt.SpeechListenOptions(

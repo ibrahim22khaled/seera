@@ -74,4 +74,104 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profile => 'Profile';
+
+  @override
+  String get sendResetLink => 'Send Reset Link';
+
+  @override
+  String get enterEmailToReset =>
+      'Enter your email to receive a password reset link. We\'ll help you get back into your account.';
+
+  @override
+  String get emailAddress => 'Email Address';
+
+  @override
+  String get enterEmail => 'Please enter your email';
+
+  @override
+  String get resetLinkSent => 'Password reset link sent to your email';
+
+  @override
+  String get resetFailed => 'Reset failed';
+
+  @override
+  String get rememberPassword => 'Remember your password?';
+
+  @override
+  String get passwordsDoNotMatch => 'Passwords do not match';
+
+  @override
+  String welcomeToSeera(Object name) {
+    return 'Welcome to Seera, $name!';
+  }
+
+  @override
+  String get registrationFailed => 'Registration failed';
+
+  @override
+  String get joinSeera => 'Join Seera';
+
+  @override
+  String get fullName => 'Full Name';
+
+  @override
+  String get confirmPassword => 'Confirm Password';
+
+  @override
+  String get aiSettings => 'AI Settings';
+
+  @override
+  String get primaryLanguage => 'Primary Language';
+
+  @override
+  String get preferredAiDialect => 'Preferred AI Dialect';
+
+  @override
+  String get toneSetting => 'TONE SETTING';
+
+  @override
+  String get slangEnglish => 'Slang English';
+
+  @override
+  String get egyptianArabic => 'Egyptian Arabic';
+
+  @override
+  String get saudiArabic => 'Saudi Arabic';
+
+  @override
+  String get alreadyHaveAccount => 'Already have an account?';
+
+  @override
+  String get required => 'Required';
+
+  @override
+  String get pleaseFillAllFields => 'Please fill all fields';
+
+  @override
+  String get loginSuccessful => 'Login Successful';
+
+  @override
+  String get loginFailed => 'Login failed';
+
+  @override
+  String googleSignInFailed(Object error) {
+    return 'Google Sign-In failed: $error';
+  }
+
+  @override
+  String get enterPassword => 'Enter your password';
+
+  @override
+  String get guestUser => 'Guest User';
+
+  @override
+  String get signOut => 'Sign Out';
+
+  @override
+  String get internalError =>
+      'An internal error occurred. Please try again later.';
+
+  @override
+  String get networkError =>
+      'Network error. Please check your internet connection.';
 }

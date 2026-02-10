@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:seera/core/theme/app_theme.dart';
 import 'package:seera/features/cv_builder/presentation/pages/review_cv_screen.dart';
 import 'package:seera/generated/l10n/app_localizations.dart';
@@ -71,19 +73,44 @@ class ChatScreenContent extends StatelessWidget {
         backgroundColor: AppTheme.darkBg,
         child: BlocBuilder<ChatCubit, ChatState>(
           builder: (context, state) {
+            final user = FirebaseAuth.instance.currentUser;
             return Column(
               children: [
                 DrawerHeader(
                   decoration: const BoxDecoration(color: AppTheme.surfaceBg),
                   child: Center(
-                    child: Text(
-                      l10n.appTitle.toUpperCase(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 2,
-                      ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          l10n.appTitle.toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                        if (user != null) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            user.email ?? user.displayName ?? '',
+                            style: const TextStyle(
+                              color: AppTheme.textMuted,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ] else ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.guestUser,
+                            style: const TextStyle(
+                              color: AppTheme.textMuted,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ),
@@ -130,9 +157,41 @@ class ChatScreenContent extends StatelessWidget {
                         trailing: IconButton(
                           icon: const Icon(Icons.delete_outline, size: 18),
                           color: Colors.redAccent.withOpacity(0.7),
-                          onPressed: () => context
-                              .read<ChatCubit>()
-                              .deleteSession(session.id),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (dialogContext) => AlertDialog(
+                                backgroundColor: AppTheme.surfaceBg,
+                                title: const Text(
+                                  'حذف المحادثة؟',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                content: const Text(
+                                  'هل أنت متأكد أنك تريد حذف هذه المحادثة؟ لا يمكن التراجع عن هذا الفعل.',
+                                  style: TextStyle(color: AppTheme.textMuted),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(dialogContext),
+                                    child: const Text('إلغاء'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      context.read<ChatCubit>().deleteSession(
+                                        session.id,
+                                      );
+                                      Navigator.pop(dialogContext);
+                                    },
+                                    child: const Text(
+                                      'حذف',
+                                      style: TextStyle(color: Colors.redAccent),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
                         selected: isSelected,
                         onTap: () {
@@ -143,6 +202,32 @@ class ChatScreenContent extends StatelessWidget {
                     },
                   ),
                 ),
+                const Divider(color: AppTheme.textMuted),
+                if (user == null)
+                  ListTile(
+                    leading: const Icon(Icons.login, color: Colors.green),
+                    title: Text(
+                      l10n.login,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    onTap: () {
+                      Navigator.pushNamed(context, '/login');
+                    },
+                  )
+                else
+                  ListTile(
+                    leading: const Icon(Icons.logout, color: Colors.redAccent),
+                    title: Text(
+                      l10n.signOut,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    onTap: () async {
+                      await FirebaseAuth.instance.signOut();
+                      Fluttertoast.showToast(msg: 'You signed out');
+                      if (context.mounted) Navigator.pop(context);
+                    },
+                  ),
+                const SizedBox(height: 16),
               ],
             );
           },

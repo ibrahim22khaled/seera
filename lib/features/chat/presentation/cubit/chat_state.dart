@@ -26,20 +26,32 @@ abstract class ChatState {
   final List<ChatSession> sessions;
   final String currentSessionId;
   final String? currentField;
+  final String selectedLocale;
 
   ChatState({
     this.sessions = const [],
     this.currentSessionId = '',
     this.currentField,
+    this.selectedLocale = 'ar-EG',
   });
 }
 
 class ChatInitial extends ChatState {
-  ChatInitial({super.sessions, super.currentSessionId, super.currentField});
+  ChatInitial({
+    super.sessions,
+    super.currentSessionId,
+    super.currentField,
+    super.selectedLocale,
+  });
 }
 
 class ChatLoading extends ChatState {
-  ChatLoading({super.sessions, super.currentSessionId, super.currentField});
+  ChatLoading({
+    super.sessions,
+    super.currentSessionId,
+    super.currentField,
+    super.selectedLocale,
+  });
 }
 
 class ChatLoaded extends ChatState {
@@ -52,6 +64,7 @@ class ChatLoaded extends ChatState {
     super.sessions,
     super.currentSessionId,
     super.currentField,
+    super.selectedLocale,
   });
 }
 
@@ -65,6 +78,7 @@ class ChatError extends ChatState {
     super.sessions,
     super.currentSessionId,
     super.currentField,
+    super.selectedLocale,
   });
 }
 
@@ -78,5 +92,6 @@ class ChatReview extends ChatState {
     super.sessions,
     super.currentSessionId,
     super.currentField,
+    super.selectedLocale,
   });
 }

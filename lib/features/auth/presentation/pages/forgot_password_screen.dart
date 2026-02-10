@@ -1,9 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import '../../../../core/utils/auth_error_handler.dart';
 import 'package:seera/core/theme/app_theme.dart';
 import 'package:seera/generated/l10n/app_localizations.dart';
 
-class ForgotPasswordScreen extends StatelessWidget {
+class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
+
+  @override
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+}
+
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final _emailController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _resetPassword() async {
+    final l10n = AppLocalizations.of(context)!;
+    if (_emailController.text.isEmpty) {
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.enterEmail);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(
+        email: _emailController.text.trim(),
+      );
+      Fluttertoast.showToast(
+        msg: l10n.resetLinkSent,
+        backgroundColor: Colors.green,
+      );
+      if (mounted) Navigator.pop(context);
+    } on FirebaseAuthException catch (e) {
+      Fluttertoast.showToast(msg: AuthErrorHandler.getMessage(e, l10n));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,49 +87,34 @@ class ForgotPasswordScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Enter your email to receive a password reset link. We\'ll help you get back into your account.',
-                style: TextStyle(
+              Text(
+                l10n.enterEmailToReset,
+                style: const TextStyle(
                   color: AppTheme.textMuted,
                   fontSize: 16,
                   height: 1.5,
                 ),
               ),
               const SizedBox(height: 48),
-              Text(
-                l10n.email + " Address",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'name@example.com',
-                  prefixIcon: const Icon(
-                    Icons.email_outlined,
-                    color: AppTheme.textMuted,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF1E293B)),
-                  ),
-                ),
+              _buildTextField(
+                l10n.emailAddress,
+                'name@example.com',
+                controller: _emailController,
               ),
               const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: () {},
-                child: const Text('Send Reset Link'),
-              ),
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ElevatedButton(
+                      onPressed: _resetPassword,
+                      child: Text(l10n.sendResetLink),
+                    ),
               const Spacer(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    'Remember your password?',
-                    style: TextStyle(color: AppTheme.textMuted),
+                  Text(
+                    l10n.rememberPassword,
+                    style: const TextStyle(color: AppTheme.textMuted),
                   ),
                   TextButton(
                     onPressed: () => Navigator.pop(context),
@@ -107,6 +133,42 @@ class ForgotPasswordScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(
+    String label,
+    String hint, {
+    TextEditingController? controller,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(color: AppTheme.textMuted),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF1E293B)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppTheme.primaryBlue),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

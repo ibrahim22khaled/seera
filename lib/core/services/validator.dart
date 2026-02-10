@@ -95,7 +95,17 @@ class Validator {
         return isNotEmpty(value) ? null : 'القيمة لا يمكن أن تكون فارغة.';
       case 'link':
       case 'attachment':
-        return isValidUrl(value) ? null : 'الرابط غير صحيح.';
+        return null; // Relaxed to allow user freedom
+      case 'jobtype':
+        final lower = value.toLowerCase();
+        if (lower.contains('tech') ||
+            lower.contains('blue') ||
+            lower.contains('service') ||
+            lower.contains('مهني') ||
+            lower.contains('تقني')) {
+          return null;
+        }
+        return 'برجاء تحديد نوع الوظيفة (مثلاً: tech أو blue_collar).';
       default:
         return null;
     }

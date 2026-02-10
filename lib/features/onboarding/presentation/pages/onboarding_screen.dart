@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:seera/core/theme/app_theme.dart';
 import 'package:seera/generated/l10n/app_localizations.dart';
@@ -235,7 +236,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  void _navigateHome() {
-    Navigator.pushReplacementNamed(context, '/chat');
+  Future<void> _navigateHome() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('show_onboarding', false);
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/chat');
+    }
   }
 }

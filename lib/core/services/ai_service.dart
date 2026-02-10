@@ -81,7 +81,8 @@ class GroqService implements ChatService {
           "company": "اسم الشركة",
           "role": "الدور",
           "duration": "المدة",
-          "description": "الوصف"
+          "description": "الوصف",
+          "portfolioItems": ["رابط 1", "رابط 2"]
         }
       ],
       "languages": [
@@ -90,8 +91,12 @@ class GroqService implements ChatService {
           "level": "المستوى"
         }
       ],
-      "attachments": ["رابط 1", "رابط 2"]
+      "attachments": []
     }
+    
+    ملاحظات هامة:
+    - إذا لم يذكر المستخدم "الملخص المهني" أو "المهارات" في المحادثة، اتركهم فارغين (سيقوم بإضافتهم لاحقاً).
+    - استخرج أي روابط أو ملفات ذكرها المستخدم بعد كل خبرة عملية وضعها في قائمة "portfolioItems" الخاصة بتلك الخبرة.
     ''';
 
     final response = await http.post(
@@ -182,26 +187,42 @@ class OpenRouterService implements ChatService {
     final historyPrompt = history.join('\n');
     final prompt =
         '''
-    دلوقتي خلاص خلصنا. بناءً على المحادثة دي:
+    بناءً على المحادثة دي:
     $historyPrompt
     
     طلعلي البيانات في شكل JSON بالظبط زي الفورمات ده، وماتتكلمش ولا كلمة زيادة:
     
     {
       "fullName": "الاسم",
+      "email": "البريد الإلكتروني",
       "phone": "رقم التليفون",
-      "jobTitle": "المسمى الوظيفي",
-      "summary": "ملخص احترافي عني",
+      "country": "الدولة",
+      "city": "المدينة",
+      "jobTitle": "المسمى الوظيفي الحالي",
+      "targetCountry": "الدولة المستهدفة للعمل",
+      "summary": "ملخص احترافي",
       "skills": ["مهارة 1", "مهارة 2"],
       "experience": [
         {
           "company": "اسم الشركة",
           "role": "الدور",
           "duration": "المدة",
-          "description": "الوصف"
+          "description": "الوصف",
+          "portfolioItems": ["رابط 1", "رابط 2"]
         }
-      ]
+      ],
+      "languages": [
+        {
+          "name": "اللغة",
+          "level": "المستوى"
+        }
+      ],
+      "attachments": []
     }
+    
+    ملاحظات هامة:
+    - إذا لم يذكر المستخدم "الملخص المهني" أو "المهارات" في المحادثة، اتركهم فارغين (سيقوم بإضافتهم لاحقاً).
+    - استخرج أي روابط أو ملفات ذكرها المستخدم بعد كل خبرة عملية وضعها في قائمة "portfolioItems" الخاصة بتلك الخبرة.
     ''';
 
     final response = await http.post(
@@ -291,26 +312,42 @@ class HuggingFaceService implements ChatService {
     final historyPrompt = history.join('\n');
     final prompt =
         '''
-    دلوقتي خلاص خلصنا. بناءً على المحادثة دي:
+    بناءً على المحادثة دي:
     $historyPrompt
     
     طلعلي البيانات في شكل JSON بالظبط زي الفورمات ده، وماتتكلمش ولا كلمة زيادة:
     
     {
       "fullName": "الاسم",
+      "email": "البريد الإلكتروني",
       "phone": "رقم التليفون",
-      "jobTitle": "المسمى الوظيفي",
-      "summary": "ملخص احترافي عني",
+      "country": "الدولة",
+      "city": "المدينة",
+      "jobTitle": "المسمى الوظيفي الحالي",
+      "targetCountry": "الدولة المستهدفة للعمل",
+      "summary": "ملخص احترافي",
       "skills": ["مهارة 1", "مهارة 2"],
       "experience": [
         {
           "company": "اسم الشركة",
           "role": "الدور",
           "duration": "المدة",
-          "description": "الوصف"
+          "description": "الوصف",
+          "portfolioItems": ["رابط 1", "رابط 2"]
         }
-      ]
+      ],
+      "languages": [
+        {
+          "name": "اللغة",
+          "level": "المستوى"
+        }
+      ],
+      "attachments": []
     }
+    
+    ملاحظات هامة:
+    - إذا لم يذكر المستخدم "الملخص المهني" أو "المهارات" في المحادثة، اتركهم فارغين (سيقوم بإضافتهم لاحقاً).
+    - استخرج أي روابط أو ملفات ذكرها المستخدم بعد كل خبرة عملية وضعها في قائمة "portfolioItems" الخاصة بتلك الخبرة.
     ''';
 
     final response = await http.post(

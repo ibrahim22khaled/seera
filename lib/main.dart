@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'package:seera/core/services/ai_service.dart';
 import 'package:seera/core/services/mock_gemini_service.dart';
 import 'core/theme/app_theme.dart';
@@ -8,6 +10,7 @@ import 'features/onboarding/presentation/pages/onboarding_screen.dart';
 import 'features/splash/presentation/pages/splash_screen.dart';
 import 'features/navigation/presentation/pages/main_scaffold.dart';
 import 'features/auth/presentation/pages/login_screen.dart';
+import 'features/auth/presentation/pages/register_screen.dart';
 import 'features/auth/presentation/pages/forgot_password_screen.dart';
 import 'features/cv_builder/presentation/pages/download_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -34,7 +37,9 @@ const String geminiApiKey = 'AIzaSyBCHJ8nisqpiTDRlkmxceVVlKvk7GUTa3s';
 const String huggingFaceApiKey = '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';
 // ---------------------
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -111,6 +116,7 @@ class MyApp extends StatelessWidget {
             routes: {
               '/onboarding': (context) => const OnboardingScreen(),
               '/login': (context) => const LoginScreen(),
+              '/register': (context) => const RegisterScreen(),
               '/forgot-password': (context) => const ForgotPasswordScreen(),
               '/chat': (context) => const MainScaffold(),
               '/download': (context) => const DownloadScreen(),
@@ -132,13 +138,20 @@ class MyApp extends StatelessWidget {
 3. لا تسأل عدة أسئلة في وقت واحد.
 4. لا تكرر أسئلة تم الإجابة عليها بالفعل.
 5. لا تخترع أو تفترض بيانات من عندك.
-6. استخدم لغة عربية مصرية بسيطة ومهذبة.
+6. استخدم لغة عربية مصرية بسيطة ومهذبة (أو اللهجة اللي يختارها المستخدم).
 7. لا تشرح المنطق الخاص بالنظام للمستخدم.
 
-عند بدء جلسة جديدة، يجب عليك أولاً وقبل أي شيء أن تطلب من المستخدم اختيار نوع الوظيفة:
-- وظيفة عملية / خدمات (blue_collar)
-- وظيفة تقنية / مكتبية (tech)
-كل الأسئلة التالية تعتمد على هذا الاختيار.
+عند بدء جلسة جديدة، يجب عليك جمع البيانات بهذا الترتيب تماماً:
+1. الاسم بالكامل.
+2. المسمى الوظيفي الحالي (أو اللي المستخدم عاوزه).
+3. البريد الإلكتروني.
+4. رقم الهاتف.
+5. الدولة.
+6. المدينة.
+7. نوع الوظيفة (يا ريت تختار بين: وظيفة عملية/خدمات "blue_collar" أو وظيفة تقنية/مكتبية "tech").
+8. الخبرات العملية (اسم الشركة، الدور، المدة، المهام). بعد كل خبرة، اسأل عن روابط أو صور لهذا العمل. ثم اسأل "هل هناك خبرات أخرى؟".
+9. التعليم.
+10. اللغات والمستوى.
 
 يجب التحقق من صحة كل إجابة منطقيًا:
 - الاسم يجب ألا يشبه المسمى الوظيفي.
@@ -151,20 +164,11 @@ class MyApp extends StatelessWidget {
 - اطلب من المستخدم بأدب إعادة إدخال نفس الحقل.
 - لا تنتقل للخطوة التالية حتى يتم استلام مدخلات صحيحة.
 
-بخصوص المرفقات:
-- اقبل المرفقات (روابط أو ملفات) دون تحليل محتواها.
-- اعتبرها نماذج أعمال خارجية فقط.
+بخصوص المرفقات وروابط الأعمال:
+- بعد كل خبرة عملية أو مشروع يذكره المستخدم، اسأله "هل عندك صور أو روابط (مثل GitHub أو Behance) للشغل ده حابب تظهر في الـ CV؟".
+- اقبل الروابط أو الملفات واعتبرها نماذج أعمال مرتبطة بالخبرة الحالية.
 - لا تلخص أو تفحص محتوى الملفات.
 
-خطة جمع البيانات:
-1. اختيار نوع الوظيفة (blue_collar أو tech).
-2. الاسم بالكامل.
-3. المسمى الوظيفي.
-4. الملخص المهني (فقرة واحدة واضحة).
-5. الخبرات العملية (اسم الشركة، الدور، المدة، المهام). اسأل "هل هناك خبرات أخرى؟" بعد كل واحدة.
-6. المهارات.
-7. اللغات والمستوى.
-8. روابط المرفقات (إن وجدت).
-9. معلومات التواصل (البريد، الهاتف، الموقع).
+ملاحظة هامة: لا تسأل عن "الملخص المهني" أو "المهارات"؛ سيقوم المستخدم بإضافتهما لاحقاً بنفسه.
 ''';
 }
