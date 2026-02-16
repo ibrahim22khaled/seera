@@ -104,10 +104,11 @@ class _SplashScreenState extends State<SplashScreen>
                           width: 1,
                         ),
                       ),
-                      child: const Icon(
-                        Icons.description_rounded,
-                        size: 80,
-                        color: AppTheme.primaryBlue,
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.contain,
                       ),
                     ),
                     const SizedBox(height: 32),

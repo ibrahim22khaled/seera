@@ -67,6 +67,10 @@ class _SavedCvsScreenState extends State<SavedCvsScreen> {
         //   icon: Icon(Icons.arrow_back_ios, color: textColor, size: 20),
         //   onPressed: () => Navigator.maybePop(context),
         // ),
+        leading: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Image.asset('assets/images/logo.png'),
+        ),
         title: Text(
           loc.resumes, // "My Saved Resumes"
           style: TextStyle(color: textColor, fontWeight: FontWeight.bold),

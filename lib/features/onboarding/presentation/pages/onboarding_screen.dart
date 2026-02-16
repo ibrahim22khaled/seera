@@ -21,12 +21,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       appBar: AppBar(
         leading: Padding(
           padding: const EdgeInsets.only(left: 16.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppTheme.primaryBlue,
-              borderRadius: BorderRadius.circular(8),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset(
+              'assets/images/logo.png',
+              width: 20,
+              height: 20,
+              fit: BoxFit.cover,
             ),
-            child: const Icon(Icons.description, color: Colors.white, size: 20),
           ),
         ),
         title: Text(
