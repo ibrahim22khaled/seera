@@ -1,8 +1,10 @@
+import 'package:seera/generated/l10n/app_localizations.dart';
+
 class Validator {
   static bool isValidName(String name) {
     if (name.trim().isEmpty) return false;
-    // Basic name validation: no digits
-    return !RegExp(r'\d').hasMatch(name);
+    // Allow letters, spaces, and basic punctuation like . or -
+    return RegExp(r'^[a-zA-Z\u0600-\u06FF\s\.-]+$').hasMatch(name.trim());
   }
 
   static bool isValidEmail(String email) {
@@ -11,17 +13,16 @@ class Validator {
 
   static bool isValidPhone(String phone) {
     if (phone.trim().isEmpty) return false;
-    // Allow digits, +, -, and spaces
-    return RegExp(r'^[+0-9\s-]+$').hasMatch(phone.trim());
+    // Allow digits, +, -, and spaces. Be more permissive to avoid flagging valid inputs.
+    // e.g., +20 100 123 4567, 01001234567
+    return RegExp(r'^[+]?[0-9\s-]{7,20}$').hasMatch(phone.trim());
   }
 
   static bool isValidUrl(String url) {
     if (url.trim().isEmpty) return false;
-    final regex = RegExp(
-      r'^(http|https):\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(/\S*)?$',
-      caseSensitive: false,
-    );
-    return regex.hasMatch(url.trim());
+    // Simple check. Can be more robust.
+    // Allow standard http/https/www patterns or even just domain.com
+    return url.trim().contains('.') && url.trim().length > 3;
   }
 
   static bool isNotEmpty(String value) {
@@ -29,83 +30,49 @@ class Validator {
   }
 
   static bool isValidDateRange(String date) {
-    // Expected format: Month Year – Month Year (with en-dash or hyphen)
-    // Example: January 2020 – Present or January 2020 – December 2022
-    final regex = RegExp(
-      r'^[A-Z][a-z]+ \d{4} (–|-) ([A-Z][a-z]+ \d{4}|Present|الحالي)$',
-      caseSensitive: false,
-    );
-    return regex.hasMatch(date.trim());
+    // Relaxed date range validation
+    return isNotEmpty(date);
   }
 
   static bool isJobTitleNotName(String title) {
-    final commonNames = [
-      'ahmed',
-      'mohamed',
-      'ali',
-      'hassan',
-      'ibrahim',
-      'sara',
-      'mona',
-    ];
-    return !commonNames.contains(title.trim().toLowerCase());
+    // This heuristic is often flaky. Disabling it to avoid false positives.
+    return true;
   }
 
   static bool isNameNotJobTitle(String name) {
-    final commonJobs = [
-      'engineer',
-      'doctor',
-      'teacher',
-      'developer',
-      'manager',
-      'مهندس',
-      'دكتور',
-      'مطور',
-    ];
-    return !commonJobs.contains(name.trim().toLowerCase());
+    // This heuristic is often flaky. Disabling it to avoid false positives.
+    return true;
   }
 
-  static String? validateField(String fieldName, String value) {
+  static String? validateField(
+    String fieldName,
+    String value,
+    AppLocalizations loc,
+  ) {
     switch (fieldName.toLowerCase()) {
       case 'name':
       case 'fullname':
         if (!isValidName(value)) {
-          return 'الاسم غير صحيح، يرجى كتابة اسم حقيقي بدون أرقام.';
-        }
-        if (!isNameNotJobTitle(value)) {
-          return 'الاسم لا يجب أن يكون مسمى وظيفي.';
+          return loc.invalidName;
         }
         return null;
       case 'email':
-        return isValidEmail(value) ? null : 'البريد الإلكتروني غير صحيح.';
+        return isValidEmail(value) ? null : loc.invalidEmail;
       case 'phone':
-        return isValidPhone(value) ? null : 'رقم الهاتف غير صحيح.';
-      case 'jobtitle':
-        if (!isNotEmpty(value)) return 'القيمة لا يمكن أن تكون فارغة.';
-        if (!isJobTitleNotName(value)) {
-          return 'المسمى الوظيفي لا يجب أن يكون اسماً.';
-        }
-        return null;
-      case 'duration':
-        return isNotEmpty(value) ? null : 'القيمة لا يمكن أن تكون فارغة.';
+      case 'mobile':
+      case 'phonenumber':
+        return isValidPhone(value) ? null : loc.invalidPhone;
+      case 'linkedin':
+      case 'github':
+      case 'website':
+        if (value.isEmpty) return null; // Optional
+        return isValidUrl(value) ? null : loc.invalidUrl;
       case 'country':
       case 'city':
       case 'role':
       case 'company':
-        return isNotEmpty(value) ? null : 'القيمة لا يمكن أن تكون فارغة.';
-      case 'link':
-      case 'attachment':
-        return null; // Relaxed to allow user freedom
-      case 'jobtype':
-        final lower = value.toLowerCase();
-        if (lower.contains('tech') ||
-            lower.contains('blue') ||
-            lower.contains('service') ||
-            lower.contains('مهني') ||
-            lower.contains('تقني')) {
-          return null;
-        }
-        return 'برجاء تحديد نوع الوظيفة (مثلاً: tech أو blue_collar).';
+      case 'jobtitle':
+        return isNotEmpty(value) ? null : loc.fieldRequired;
       default:
         return null;
     }

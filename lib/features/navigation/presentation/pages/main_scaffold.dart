@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:seera/features/chat/presentation/pages/chat_screen.dart';
+import 'package:seera/features/cv_builder/presentation/pages/cv_builder_selection_screen.dart';
+
+import 'package:seera/features/cv_builder/presentation/pages/saved_cvs_screen.dart';
+import 'package:seera/features/profile/presentation/pages/profile_screen.dart';
+import 'package:seera/generated/l10n/app_localizations.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -12,60 +16,37 @@ class _MainScaffoldState extends State<MainScaffold> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const ChatScreenContent(),
-    const ResumesScreen(),
+    const CVBuilderSelectionScreen(),
+    const SavedCvsScreen(),
     const ProfileScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            activeIcon: Icon(Icons.chat_bubble),
-            label: 'الدردشة',
+            icon: const Icon(Icons.chat_bubble_outline),
+            activeIcon: const Icon(Icons.chat_bubble),
+            label: l10n.chat,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.description_outlined),
-            activeIcon: Icon(Icons.description),
-            label: 'السير الذاتية',
+            icon: const Icon(Icons.description_outlined),
+            activeIcon: const Icon(Icons.description),
+            label: l10n.resumes,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'الملف الشخصي',
+            icon: const Icon(Icons.person_outline),
+            activeIcon: const Icon(Icons.person),
+            label: l10n.profile,
           ),
         ],
       ),
-    );
-  }
-}
-
-class ResumesScreen extends StatelessWidget {
-  const ResumesScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('السير الذاتية')),
-      body: const Center(child: Text('قائمة السير الذاتية المحفوظة (قريباً)')),
-    );
-  }
-}
-
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('الملف الشخصي')),
-      body: const Center(child: Text('بياناتك الشخصية (قريباً)')),
     );
   }
 }

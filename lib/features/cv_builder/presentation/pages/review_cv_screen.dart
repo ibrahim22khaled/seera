@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../data/models/cv_model.dart';
-import 'package:seera/features/chat/presentation/cubit/chat_cubit.dart';
+
+import 'package:seera/features/cv_builder/presentation/cubit/cv_builder_cubit.dart';
+import 'package:seera/generated/l10n/app_localizations.dart';
+import 'package:seera/features/cv_builder/domain/services/pdf_service.dart';
+import 'package:printing/printing.dart';
+import 'package:seera/core/theme/app_theme.dart';
 
 class ReviewCvScreen extends StatefulWidget {
   final List<String> messages;
@@ -20,405 +25,224 @@ class ReviewCvScreen extends StatefulWidget {
 
 class _ReviewCvScreenState extends State<ReviewCvScreen> {
   late TextEditingController _nameController;
-  late TextEditingController _phoneController;
+  late TextEditingController _jobTitleController;
   late TextEditingController _emailController;
+  late TextEditingController _phoneController;
   late TextEditingController _cityController;
   late TextEditingController _countryController;
-  late TextEditingController _targetCountryController; // Added
-  late TextEditingController _jobTitleController;
+  late TextEditingController _linkedinController;
+  late TextEditingController _githubController;
   late TextEditingController _summaryController;
-  late TextEditingController _additionalInfoController;
-
-  late List<String> _skills;
-  late List<LanguageModel> _languages;
-  late List<EducationModel> _education;
-  late List<ExperienceModel> _experience;
-  late List<AttachmentModel> _attachments;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.cvData.fullName);
-    _phoneController = TextEditingController(text: widget.cvData.phone);
+    _jobTitleController = TextEditingController(text: widget.cvData.jobTitle);
     _emailController = TextEditingController(text: widget.cvData.email);
+    _phoneController = TextEditingController(text: widget.cvData.phone);
     _cityController = TextEditingController(text: widget.cvData.city);
     _countryController = TextEditingController(text: widget.cvData.country);
-    _targetCountryController = TextEditingController(
-      text: widget.cvData.targetCountry,
-    );
-    _jobTitleController = TextEditingController(text: widget.cvData.jobTitle);
+    _linkedinController = TextEditingController(text: widget.cvData.linkedin);
+    _githubController = TextEditingController(text: widget.cvData.github);
     _summaryController = TextEditingController(text: widget.cvData.summary);
-    _additionalInfoController = TextEditingController(
-      text: widget.cvData.additionalInfo,
-    );
-
-    _skills = List.from(widget.cvData.skills);
-    _languages = List.from(widget.cvData.languages);
-    _education = List.from(widget.cvData.education);
-    _experience = List.from(widget.cvData.experience);
-    _attachments = List.from(widget.cvData.attachments);
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _phoneController.dispose();
+    _jobTitleController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _cityController.dispose();
     _countryController.dispose();
-    _targetCountryController.dispose();
-    _jobTitleController.dispose();
+    _linkedinController.dispose();
+    _githubController.dispose();
     _summaryController.dispose();
-    _additionalInfoController.dispose();
     super.dispose();
+  }
+
+  void _saveChanges() {
+    final updatedCv = widget.cvData.copyWith(
+      fullName: _nameController.text,
+      jobTitle: _jobTitleController.text,
+      email: _emailController.text,
+      phone: _phoneController.text,
+      city: _cityController.text,
+      country: _countryController.text,
+      linkedin: _linkedinController.text,
+      github: _githubController.text,
+      summary: _summaryController.text,
+    );
+
+    context.read<CVBuilderCubit>().updateCV(updatedCv);
+  }
+
+  Future<void> _previewPdf() async {
+    _saveChanges();
+    try {
+      final pdfService = PdfServiceImpl();
+      final file = await pdfService.generatePdf(
+        context.read<CVBuilderCubit>().state.currentCv,
+        AppLocalizations.of(context)!,
+      );
+      await Printing.layoutPdf(
+        onLayout: (format) => file.readAsBytes(),
+        name: 'My_CV.pdf',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error generating PDF: $e')));
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    // Using dark theme colors directly or via AppTheme
     return Scaffold(
+      backgroundColor: AppTheme.darkTheme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('راجع بياناتك'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.check, color: Colors.blue),
-            onPressed: () {
-              final updated = widget.cvData.copyWith(
-                fullName: _nameController.text.trim(),
-                phone: _phoneController.text.trim(),
-                email: _emailController.text.trim(),
-                city: _cityController.text.trim(),
-                country: _countryController.text.trim(),
-                targetCountry: _targetCountryController.text.trim(),
-                jobTitle: _jobTitleController.text.trim(),
-                summary: _summaryController.text.trim(),
-                additionalInfo: _additionalInfoController.text.trim(),
-                skills: _skills,
-                languages: _languages,
-                education: _education,
-                experience: _experience,
-                attachments: _attachments,
-              );
-
-              context.read<ChatCubit>().finalizePdf(updated);
-              Navigator.pop(context);
-            },
-          ),
-        ],
+        title: Text(loc.reviewData),
+        backgroundColor: AppTheme.darkTheme.appBarTheme.backgroundColor,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _sectionTitle('المعلومات الأساسية'),
-            _buildTextField('الاسم بالكامل', _nameController),
-            _buildTextField('البريد الإلكتروني', _emailController),
-            _buildTextField('رقم التليفون', _phoneController),
-            Row(
-              children: [
-                Expanded(child: _buildTextField('المدينة', _cityController)),
-                const SizedBox(width: 8),
-                Expanded(child: _buildTextField('الدولة', _countryController)),
-              ],
+            _buildSectionCard(loc.basicInfo, [
+              _buildTextField(loc.fullNameLabel, _nameController),
+              _buildTextField(loc.jobTitleLabel, _jobTitleController),
+              _buildTextField(loc.emailLabel, _emailController),
+              _buildTextField(loc.phoneLabel, _phoneController),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(loc.cityLabel, _cityController),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildTextField(
+                      loc.countryLabel,
+                      _countryController,
+                    ),
+                  ),
+                ],
+              ),
+              _buildTextField(loc.linkedinLabel, _linkedinController),
+              _buildTextField(loc.githubLabel, _githubController),
+            ]),
+            const SizedBox(height: 16),
+            _buildSectionCard(loc.summaryLabel, [
+              _buildTextField(
+                loc.summaryLabel,
+                _summaryController,
+                maxLines: 5,
+              ),
+            ]),
+            const SizedBox(height: 16),
+
+            // Custom Sections Display
+            if (widget.cvData.customSections.isNotEmpty)
+              _buildSectionCard(loc.customSections, [
+                ...widget.cvData.customSections.map(
+                  (s) => ListTile(
+                    title: Text(
+                      s.title,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    subtitle: Text(
+                      s.content,
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                  ),
+                ),
+              ]),
+            const SizedBox(height: 16),
+
+            // Experience
+            if (widget.cvData.experience.isNotEmpty) ...[
+              _buildExperienceSection(widget.cvData, loc),
+              const SizedBox(height: 16),
+            ],
+
+            // Education
+            if (widget.cvData.education.isNotEmpty) ...[
+              _buildEducationSection(widget.cvData, loc),
+              const SizedBox(height: 16),
+            ],
+
+            // Skills
+            if (widget.cvData.skills.isNotEmpty) ...[
+              _buildSkillsSection(widget.cvData, loc),
+              const SizedBox(height: 16),
+            ],
+
+            // Languages
+            if (widget.cvData.languages.isNotEmpty) ...[
+              _buildLanguagesSection(widget.cvData, loc),
+              const SizedBox(height: 16),
+            ],
+
+            // Projects
+            if (widget.cvData.projects.isNotEmpty) ...[
+              _buildProjectsSection(widget.cvData, loc),
+              const SizedBox(height: 16),
+            ],
+
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryBlue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: _previewPdf,
+                child: Text(
+                  loc.previewPdf,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ),
-            _buildTextField('الدولة المستهدفة', _targetCountryController),
-            _buildTextField('المسمى الوظيفي', _jobTitleController),
-            _buildTextField('نبذة مختصرة', _summaryController, maxLines: 4),
-
-            _sectionTitle('الخبرات العملية'),
-            _buildExperienceEditor(),
-
-            _sectionTitle('التعليم'),
-            _buildEducationEditor(),
-
-            _sectionTitle('المهارات'),
-            _buildSkillsEditor(),
-
-            _sectionTitle('اللغات'),
-            _buildLanguagesEditor(),
-
-            _sectionTitle('المشاريع / Portfolio'),
-            _buildAttachmentsEditor(),
-
-            _sectionTitle('معلومات إضافية'),
-            _buildTextField(
-              'أي معلومات أخرى',
-              _additionalInfoController,
-              maxLines: 3,
-            ),
-
-            const SizedBox(height: 80),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  // ================= UI HELPERS =================
-
-  Widget _sectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.blue,
-        ),
+  Widget _buildSectionCard(String title, List<Widget> children) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceBg,
+        borderRadius: BorderRadius.circular(12),
       ),
-    );
-  }
-
-  Widget _buildExperienceEditor() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ..._experience.map((exp) {
-          return Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          '${exp.jobTitle} - ${exp.company}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.delete_outline,
-                          color: Colors.redAccent,
-                        ),
-                        onPressed: () =>
-                            setState(() => _experience.remove(exp)),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    exp.duration,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 8),
-                  if (exp.portfolioItems.isNotEmpty) ...[
-                    const Text(
-                      'نماذج الأعمال / روابط:',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    ...exp.portfolioItems.map(
-                      (item) => Text(
-                        '• $item',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: Colors.blue,
-                        ),
-                      ),
-                    ),
-                  ],
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: TextButton.icon(
-                      onPressed: () => _showEditExperienceDialog(exp),
-                      icon: const Icon(Icons.edit, size: 16),
-                      label: const Text(
-                        'تعديل',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: AppTheme.primaryBlue,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
             ),
-          );
-        }),
-        TextButton.icon(
-          onPressed: () => _showAddExperienceDialog(),
-          icon: const Icon(Icons.add),
-          label: const Text('إضافة خبرة'),
-        ),
-      ],
-    );
-  }
-
-  void _showAddExperienceDialog() {
-    final roleController = TextEditingController();
-    final companyController = TextEditingController();
-    final locationController = TextEditingController();
-    final durationController = TextEditingController();
-    final descController = TextEditingController();
-    final portfolioController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('إضافة خبرة عملية'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: roleController,
-                decoration: const InputDecoration(labelText: 'المسمى الوظيفي'),
-              ),
-              TextField(
-                controller: companyController,
-                decoration: const InputDecoration(labelText: 'الشركة'),
-              ),
-              TextField(
-                controller: locationController,
-                decoration: const InputDecoration(labelText: 'المكان'),
-              ),
-              TextField(
-                controller: durationController,
-                decoration: const InputDecoration(
-                  labelText: 'المدة (مثلاً: ٢٠٢٠ - ٢٠٢٢)',
-                ),
-              ),
-              TextField(
-                controller: descController,
-                decoration: const InputDecoration(
-                  labelText: 'المهام (افصل بـ -)',
-                ),
-                maxLines: 3,
-              ),
-              TextField(
-                controller: portfolioController,
-                decoration: const InputDecoration(
-                  labelText: 'روابط أعمال (افصل بـ space)',
-                ),
-                maxLines: 2,
-              ),
-            ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('إلغاء'),
-          ),
-          TextButton(
-            onPressed: () {
-              if (roleController.text.isNotEmpty) {
-                setState(() {
-                  _experience.add(
-                    ExperienceModel(
-                      company: companyController.text,
-                      jobTitle: roleController.text,
-                      duration: durationController.text,
-                      location: locationController.text,
-                      description: descController.text,
-                      responsibilities: descController.text
-                          .split('-')
-                          .map((e) => e.trim())
-                          .where((e) => e.isNotEmpty)
-                          .toList(),
-                      portfolioItems: portfolioController.text
-                          .split(RegExp(r'[,\n\s]+'))
-                          .map((e) => e.trim())
-                          .where((e) => e.isNotEmpty)
-                          .toList(),
-                    ),
-                  );
-                });
-              }
-              Navigator.pop(context);
-            },
-            child: const Text('إضافة'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showEditExperienceDialog(ExperienceModel exp) {
-    final roleController = TextEditingController(text: exp.jobTitle);
-    final companyController = TextEditingController(text: exp.company);
-    final locationController = TextEditingController(text: exp.location);
-    final durationController = TextEditingController(text: exp.duration);
-    final descController = TextEditingController(
-      text: exp.responsibilities.join(' - '),
-    );
-    final portfolioController = TextEditingController(
-      text: exp.portfolioItems.join(' '),
-    );
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('تعديل خبرة'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: roleController,
-                decoration: const InputDecoration(labelText: 'المسمى الوظيفي'),
-              ),
-              TextField(
-                controller: companyController,
-                decoration: const InputDecoration(labelText: 'الشركة'),
-              ),
-              TextField(
-                controller: locationController,
-                decoration: const InputDecoration(labelText: 'المكان'),
-              ),
-              TextField(
-                controller: durationController,
-                decoration: const InputDecoration(labelText: 'المدة'),
-              ),
-              TextField(
-                controller: descController,
-                decoration: const InputDecoration(labelText: 'المهام'),
-                maxLines: 3,
-              ),
-              TextField(
-                controller: portfolioController,
-                decoration: const InputDecoration(labelText: 'روابط أعمال'),
-                maxLines: 2,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('إلغاء'),
-          ),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                final index = _experience.indexOf(exp);
-                _experience[index] = ExperienceModel(
-                  company: companyController.text,
-                  jobTitle: roleController.text,
-                  duration: durationController.text,
-                  location: locationController.text,
-                  description: descController.text,
-                  responsibilities: descController.text
-                      .split('-')
-                      .map((e) => e.trim())
-                      .where((e) => e.isNotEmpty)
-                      .toList(),
-                  portfolioItems: portfolioController.text
-                      .split(RegExp(r'[,\n\s]+'))
-                      .map((e) => e.trim())
-                      .where((e) => e.isNotEmpty)
-                      .toList(),
-                );
-              });
-              Navigator.pop(context);
-            },
-            child: const Text('حفظ'),
-          ),
+          const SizedBox(height: 16),
+          ...children,
         ],
       ),
     );
@@ -434,276 +258,546 @@ class _ReviewCvScreenState extends State<ReviewCvScreen> {
       child: TextField(
         controller: controller,
         maxLines: maxLines,
+        style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           labelText: label,
-          border: const OutlineInputBorder(),
+          labelStyle: const TextStyle(color: AppTheme.textMuted),
+          filled: true,
+          fillColor: AppTheme.darkBg,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide.none,
+          ),
         ),
       ),
     );
   }
 
-  // ================= EDUCATION =================
+  // --- Experience ---
+  Widget _buildExperienceSection(CVModel cv, AppLocalizations loc) {
+    return _buildSectionCard(loc.experienceSection, [
+      _buildExperienceList(context, cv.experience, loc),
+    ]);
+  }
 
-  Widget _buildEducationEditor() {
+  Widget _buildExperienceList(
+    BuildContext context,
+    List<ExperienceModel> experience,
+    AppLocalizations loc,
+  ) {
     return Column(
       children: [
-        ..._education.map(
-          (edu) => ListTile(
-            title: Text(edu.degree),
-            subtitle: Text('${edu.institution} | ${edu.dateRange}'),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () => setState(() => _education.remove(edu)),
+        ...experience.map((exp) {
+          return Card(
+            color: AppTheme.darkBg,
+            child: ListTile(
+              title: Text(
+                exp.jobTitle,
+                style: const TextStyle(color: Colors.white),
+              ),
+              subtitle: Text(
+                '${exp.company} • ${exp.duration}',
+                style: const TextStyle(color: AppTheme.textMuted),
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.redAccent),
+                onPressed: () {
+                  final newList = List<ExperienceModel>.from(experience)
+                    ..remove(exp);
+                  context.read<CVBuilderCubit>().updateField(
+                    experience: newList,
+                  );
+                },
+              ),
+              onTap: () => _showExperienceDialog(context, exp),
             ),
-          ),
-        ),
+          );
+        }),
         TextButton.icon(
-          onPressed: _showAddEducationDialog,
+          onPressed: () => _showExperienceDialog(context, null),
           icon: const Icon(Icons.add),
-          label: const Text('إضافة تعليم'),
+          label: Text(loc.addExperience),
         ),
       ],
     );
   }
 
-  void _showAddEducationDialog() {
-    final degree = TextEditingController();
-    final institution = TextEditingController();
-    final date = TextEditingController();
+  void _showExperienceDialog(BuildContext context, ExperienceModel? existing) {
+    final loc = AppLocalizations.of(context)!;
+    final isEditing = existing != null;
+    final jobTitleController = TextEditingController(
+      text: existing?.jobTitle ?? '',
+    );
+    final companyController = TextEditingController(
+      text: existing?.company ?? '',
+    );
+    final locationController = TextEditingController(
+      text: existing?.location ?? '',
+    );
+    final durationController = TextEditingController(
+      text: existing?.duration ?? '',
+    );
+    final descController = TextEditingController(
+      text: existing?.responsibilities.join('\n') ?? '',
+    );
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('إضافة تعليم'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: degree,
-              decoration: const InputDecoration(labelText: 'الدرجة العلمية'),
-            ),
-            TextField(
-              controller: institution,
-              decoration: const InputDecoration(labelText: 'المؤسسة'),
-            ),
-            TextField(
-              controller: date,
-              decoration: const InputDecoration(labelText: 'الفترة'),
-            ),
-          ],
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppTheme.darkBg,
+        title: Text(
+          isEditing ? loc.editExperience : loc.addExperience,
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildTextField(loc.jobTitleField, jobTitleController),
+              _buildTextField(loc.companyField, companyController),
+              _buildTextField(loc.locationField, locationController),
+              _buildTextField(loc.durationField, durationController),
+              _buildTextField(
+                loc.responsibilitiesField,
+                descController,
+                maxLines: 3,
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('إلغاء'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(loc.cancel),
           ),
           TextButton(
             onPressed: () {
-              if (degree.text.isNotEmpty) {
-                setState(() {
-                  _education.add(
-                    EducationModel(
-                      degree: degree.text,
-                      institution: institution.text,
-                      dateRange: date.text,
-                    ),
-                  );
-                });
+              final newExp = ExperienceModel(
+                jobTitle: jobTitleController.text,
+                company: companyController.text,
+                location: locationController.text,
+                duration: durationController.text,
+                responsibilities: descController.text
+                    .split('\n')
+                    .where((e) => e.isNotEmpty)
+                    .toList(),
+                description: descController.text,
+                portfolioItems: [],
+              );
+
+              final cubit = context.read<CVBuilderCubit>();
+              final currentList = List<ExperienceModel>.from(
+                cubit.state.currentCv.experience,
+              );
+
+              if (isEditing) {
+                final index = currentList.indexOf(existing);
+                if (index != -1) currentList[index] = newExp;
+              } else {
+                currentList.add(newExp);
               }
-              Navigator.pop(context);
+              cubit.updateField(experience: currentList);
+              Navigator.pop(dialogContext);
             },
-            child: const Text('إضافة'),
+            child: Text(loc.save),
           ),
         ],
       ),
     );
   }
 
-  // ================= SKILLS =================
+  // --- Education ---
+  Widget _buildEducationSection(CVModel cv, AppLocalizations loc) {
+    return _buildSectionCard(loc.educationSection, [
+      _buildEducationList(context, cv.education, loc),
+    ]);
+  }
 
-  Widget _buildSkillsEditor() {
+  Widget _buildEducationList(
+    BuildContext context,
+    List<EducationModel> education,
+    AppLocalizations loc,
+  ) {
     return Column(
+      children: [
+        ...education.map((edu) {
+          return Card(
+            color: AppTheme.darkBg,
+            child: ListTile(
+              title: Text(
+                edu.degree,
+                style: const TextStyle(color: Colors.white),
+              ),
+              subtitle: Text(
+                edu.institution,
+                style: const TextStyle(color: AppTheme.textMuted),
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.redAccent),
+                onPressed: () {
+                  final newList = List<EducationModel>.from(education)
+                    ..remove(edu);
+                  context.read<CVBuilderCubit>().updateField(
+                    education: newList,
+                  );
+                },
+              ),
+              onTap: () => _showEducationDialog(context, edu),
+            ),
+          );
+        }),
+        TextButton.icon(
+          onPressed: () => _showEducationDialog(context, null),
+          icon: const Icon(Icons.add),
+          label: Text(loc.addEducation),
+        ),
+      ],
+    );
+  }
+
+  void _showEducationDialog(BuildContext context, EducationModel? existing) {
+    final loc = AppLocalizations.of(context)!;
+    final isEditing = existing != null;
+    final degreeController = TextEditingController(
+      text: existing?.degree ?? '',
+    );
+    final institutionController = TextEditingController(
+      text: existing?.institution ?? '',
+    );
+    final dateController = TextEditingController(
+      text: existing?.dateRange ?? '',
+    );
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppTheme.darkBg,
+        title: Text(
+          isEditing ? loc.edit : loc.addEducation,
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildTextField(loc.degreeField, degreeController),
+            _buildTextField(loc.institutionField, institutionController),
+            _buildTextField(loc.periodField, dateController),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(loc.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              final newEdu = EducationModel(
+                degree: degreeController.text,
+                institution: institutionController.text,
+                dateRange: dateController.text,
+              );
+
+              final cubit = context.read<CVBuilderCubit>();
+              final currentList = List<EducationModel>.from(
+                cubit.state.currentCv.education,
+              );
+
+              if (isEditing) {
+                final index = currentList.indexOf(existing);
+                if (index != -1) currentList[index] = newEdu;
+              } else {
+                currentList.add(newEdu);
+              }
+              cubit.updateField(education: currentList);
+              Navigator.pop(dialogContext);
+            },
+            child: Text(loc.save),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- Skills ---
+  Widget _buildSkillsSection(CVModel cv, AppLocalizations loc) {
+    return _buildSectionCard(loc.skillsSection, [
+      _buildSkillsList(context, cv.skills, loc),
+    ]);
+  }
+
+  Widget _buildSkillsList(
+    BuildContext context,
+    List<String> skills,
+    AppLocalizations loc,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Wrap(
           spacing: 8,
-          children: _skills
+          children: skills
               .map(
                 (skill) => Chip(
                   label: Text(skill),
-                  onDeleted: () => setState(() => _skills.remove(skill)),
+                  onDeleted: () {
+                    final newList = List<String>.from(skills)..remove(skill);
+                    context.read<CVBuilderCubit>().updateField(skills: newList);
+                  },
                 ),
               )
               .toList(),
         ),
         TextButton.icon(
-          onPressed: _showAddSkillDialog,
+          onPressed: () => _showSkillDialog(context),
           icon: const Icon(Icons.add),
-          label: const Text('إضافة مهارة'),
+          label: Text(loc.addSkill),
         ),
       ],
     );
   }
 
-  void _showAddSkillDialog() {
+  void _showSkillDialog(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final controller = TextEditingController();
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('إضافة مهارة'),
-        content: TextField(controller: controller),
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppTheme.darkBg,
+        title: Text(loc.addSkill, style: const TextStyle(color: Colors.white)),
+        content: _buildTextField(loc.skillsSection, controller),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('إلغاء'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(loc.cancel),
           ),
           TextButton(
             onPressed: () {
               if (controller.text.isNotEmpty) {
-                setState(() => _skills.add(controller.text));
+                final cubit = context.read<CVBuilderCubit>();
+                final currentList = List<String>.from(
+                  cubit.state.currentCv.skills,
+                );
+                currentList.add(controller.text);
+                cubit.updateField(skills: currentList);
               }
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
             },
-            child: const Text('إضافة'),
+            child: Text(loc.add),
           ),
         ],
       ),
     );
   }
 
-  // ================= LANGUAGES =================
+  // --- Languages ---
+  Widget _buildLanguagesSection(CVModel cv, AppLocalizations loc) {
+    return _buildSectionCard(loc.languagesSection, [
+      _buildLanguagesList(context, cv.languages, loc),
+    ]);
+  }
 
-  Widget _buildLanguagesEditor() {
+  Widget _buildLanguagesList(
+    BuildContext context,
+    List<LanguageModel> languages,
+    AppLocalizations loc,
+  ) {
     return Column(
       children: [
-        ..._languages.map(
-          (lang) => ListTile(
-            title: Text(lang.name),
-            subtitle: Text(lang.level),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () => setState(() => _languages.remove(lang)),
+        ...languages.map((lang) {
+          return Card(
+            color: AppTheme.darkBg,
+            child: ListTile(
+              title: Text(
+                lang.name,
+                style: const TextStyle(color: Colors.white),
+              ),
+              subtitle: Text(
+                lang.level,
+                style: const TextStyle(color: AppTheme.textMuted),
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.redAccent),
+                onPressed: () {
+                  final newList = List<LanguageModel>.from(languages)
+                    ..remove(lang);
+                  context.read<CVBuilderCubit>().updateField(
+                    languages: newList,
+                  );
+                },
+              ),
             ),
-          ),
-        ),
+          );
+        }),
         TextButton.icon(
-          onPressed: _showAddLanguageDialog,
+          onPressed: () => _showLanguageDialog(context),
           icon: const Icon(Icons.add),
-          label: const Text('إضافة لغة'),
+          label: Text(loc.addLanguage),
         ),
       ],
     );
   }
 
-  void _showAddLanguageDialog() {
-    final name = TextEditingController();
-    final level = TextEditingController();
+  void _showLanguageDialog(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final nameController = TextEditingController();
+    final levelController = TextEditingController();
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('إضافة لغة'),
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppTheme.darkBg,
+        title: Text(
+          loc.addLanguage,
+          style: const TextStyle(color: Colors.white),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
-              controller: name,
-              decoration: const InputDecoration(labelText: 'اللغة'),
-            ),
-            TextField(
-              controller: level,
-              decoration: const InputDecoration(labelText: 'المستوى'),
-            ),
+            _buildTextField(loc.languageField, nameController),
+            _buildTextField(loc.levelField, levelController),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('إلغاء'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(loc.cancel),
           ),
           TextButton(
             onPressed: () {
-              if (name.text.isNotEmpty) {
-                setState(() {
-                  _languages.add(
-                    LanguageModel(name: name.text, level: level.text),
-                  );
-                });
+              if (nameController.text.isNotEmpty) {
+                final newLang = LanguageModel(
+                  name: nameController.text,
+                  level: levelController.text,
+                );
+                final cubit = context.read<CVBuilderCubit>();
+                final currentList = List<LanguageModel>.from(
+                  cubit.state.currentCv.languages,
+                );
+                currentList.add(newLang);
+                cubit.updateField(languages: currentList);
               }
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
             },
-            child: const Text('إضافة'),
+            child: Text(loc.add),
           ),
         ],
       ),
     );
   }
 
-  // ================= ATTACHMENTS =================
+  // --- Projects ---
+  Widget _buildProjectsSection(CVModel cv, AppLocalizations loc) {
+    return _buildSectionCard(loc.projectsSection, [
+      _buildProjectsList(context, cv.projects, loc),
+    ]);
+  }
 
-  Widget _buildAttachmentsEditor() {
+  Widget _buildProjectsList(
+    BuildContext context,
+    List<ProjectModel> projects,
+    AppLocalizations loc,
+  ) {
     return Column(
       children: [
-        ..._attachments.map(
-          (a) => ListTile(
-            title: Text(a.title),
-            subtitle: Text(a.url),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () => setState(() => _attachments.remove(a)),
+        ...projects.map((proj) {
+          return Card(
+            color: AppTheme.darkBg,
+            child: ListTile(
+              title: Text(
+                proj.title,
+                style: const TextStyle(color: Colors.white),
+              ),
+              subtitle: Text(
+                proj.role.isNotEmpty ? '${proj.role} - ${proj.url}' : proj.url,
+                style: const TextStyle(color: AppTheme.textMuted),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.redAccent),
+                onPressed: () {
+                  final newList = List<ProjectModel>.from(projects)
+                    ..remove(proj);
+                  context.read<CVBuilderCubit>().updateField(projects: newList);
+                },
+              ),
+              onTap: () => _showProjectDialog(context, proj),
             ),
-          ),
-        ),
+          );
+        }),
         TextButton.icon(
-          onPressed: _showAddAttachmentDialog,
+          onPressed: () => _showProjectDialog(context, null),
           icon: const Icon(Icons.add),
-          label: const Text('إضافة مشروع / رابط'),
+          label: Text(loc.addProject),
         ),
       ],
     );
   }
 
-  void _showAddAttachmentDialog() {
-    final title = TextEditingController();
-    final url = TextEditingController();
+  void _showProjectDialog(BuildContext context, ProjectModel? existing) {
+    final isEditing = existing != null;
+    final titleController = TextEditingController(text: existing?.title ?? '');
+    final roleController = TextEditingController(text: existing?.role ?? '');
+    final urlController = TextEditingController(text: existing?.url ?? '');
+    final descController = TextEditingController(
+      text: existing?.description ?? '',
+    );
+    final loc = AppLocalizations.of(context)!;
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('إضافة مشروع'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: title,
-              decoration: const InputDecoration(labelText: 'العنوان'),
-            ),
-            TextField(
-              controller: url,
-              decoration: const InputDecoration(labelText: 'الرابط'),
-            ),
-          ],
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppTheme.darkBg,
+        title: Text(
+          isEditing ? loc.editProject : loc.addProject,
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildTextField(loc.titleField, titleController),
+              _buildTextField(loc.projectRole, roleController),
+              _buildTextField(loc.linkField, urlController),
+              _buildTextField(
+                loc.projectDescription,
+                descController,
+                maxLines: 3,
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('إلغاء'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(loc.cancel),
           ),
           TextButton(
             onPressed: () {
-              if (title.text.isNotEmpty && url.text.isNotEmpty) {
-                setState(() {
-                  _attachments.add(
-                    AttachmentModel(
-                      title: title.text,
-                      url: url.text,
-                      type: AttachmentType.website,
-                    ),
-                  );
-                });
+              if (titleController.text.isNotEmpty) {
+                final newProj = ProjectModel(
+                  title: titleController.text,
+                  role: roleController.text,
+                  url: urlController.text,
+                  description: descController.text,
+                );
+                final cubit = context.read<CVBuilderCubit>();
+                final currentList = List<ProjectModel>.from(
+                  cubit.state.currentCv.projects,
+                );
+
+                if (isEditing) {
+                  final index = currentList.indexOf(existing);
+                  if (index != -1) currentList[index] = newProj;
+                } else {
+                  currentList.add(newProj);
+                }
+
+                cubit.updateField(projects: currentList);
               }
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
             },
-            child: const Text('إضافة'),
+            child: Text(isEditing ? loc.save : loc.add),
           ),
         ],
       ),

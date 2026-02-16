@@ -45,6 +45,12 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null && !user.emailVerified) {
+        Fluttertoast.showToast(msg: "يرجى تأكيد بريدك الإلكتروني أولاً.");
+        if (mounted) Navigator.pushReplacementNamed(context, '/verify-email');
+        return;
+      }
       Fluttertoast.showToast(
         msg: l10n.loginSuccessful,
         backgroundColor: Colors.green,
@@ -136,10 +142,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 32),
                 Text(
                   l10n.welcomeBack,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Theme.of(context).textTheme.headlineMedium?.color,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -216,21 +222,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
                 const SizedBox(height: 32),
-                _buildSocialButton(
-                  l10n.google,
-                  Icons.g_mobiledata,
-                  Colors.white,
-                  Colors.black,
-                  onPressed: _googleSignIn,
-                ),
-                const SizedBox(height: 16),
-                _buildSocialButton(
-                  l10n.apple,
-                  Icons.apple,
-                  const Color(0xFF1E293B),
-                  Colors.white,
-                  onPressed: () {}, // Implement Apple Sign-in if needed
-                ),
+                if (Theme.of(context).platform == TargetPlatform.android)
+                  _buildSocialButton(
+                    l10n.google,
+                    Icons.g_mobiledata,
+                    Colors.white,
+                    Colors.black,
+                    onPressed: _googleSignIn,
+                  ),
+                if (Theme.of(context).platform == TargetPlatform.iOS)
+                  _buildSocialButton(
+                    l10n.apple,
+                    Icons.apple,
+                    const Color(0xFF1E293B),
+                    Colors.white,
+                    onPressed: () {}, // Implement Apple Sign-in if needed
+                  ),
                 const SizedBox(height: 40),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -273,10 +280,11 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // In _buildTextField
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyLarge?.color,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -284,8 +292,9 @@ class _LoginScreenState extends State<LoginScreen> {
         TextFormField(
           controller: controller,
           obscureText: obscureText,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
           autovalidateMode: AutovalidateMode.onUserInteraction,
+          // ...
           validator:
               validator ??
               (value) {

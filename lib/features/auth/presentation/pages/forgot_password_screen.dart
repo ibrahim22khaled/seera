@@ -58,78 +58,82 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE0F2FE),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.lock_reset,
-                  color: AppTheme.primaryBlue,
-                  size: 32,
-                ),
-              ),
-              const SizedBox(height: 32),
-              Text(
-                l10n.forgotPassword.replaceAll('?', ''),
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                l10n.enterEmailToReset,
-                style: const TextStyle(
-                  color: AppTheme.textMuted,
-                  fontSize: 16,
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 48),
-              _buildTextField(
-                l10n.emailAddress,
-                'name@example.com',
-                controller: _emailController,
-              ),
-              const SizedBox(height: 32),
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : ElevatedButton(
-                      onPressed: _resetPassword,
-                      child: Text(l10n.sendResetLink),
-                    ),
-              const Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    l10n.rememberPassword,
-                    style: const TextStyle(color: AppTheme.textMuted),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE0F2FE),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      l10n.login,
-                      style: const TextStyle(
-                        color: AppTheme.primaryBlue,
-                        fontWeight: FontWeight.bold,
+                  child: const Icon(
+                    Icons.lock_reset,
+                    color: AppTheme.primaryBlue,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Text(
+                  l10n.forgotPassword.replaceAll('?', ''),
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.enterEmailToReset,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppTheme.textMuted,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 48),
+                _buildTextField(
+                  l10n.emailAddress,
+                  'name@example.com',
+                  controller: _emailController,
+                ),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : ElevatedButton(
+                          onPressed: _resetPassword,
+                          child: Text(l10n.sendResetLink),
+                        ),
+                ),
+                const SizedBox(height: 32), // Replaced spacer with fixed space
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      l10n.rememberPassword,
+                      style: const TextStyle(color: AppTheme.textMuted),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        l10n.login,
+                        style: const TextStyle(
+                          color: AppTheme.primaryBlue,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-            ],
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

@@ -12,30 +12,14 @@ import 'features/navigation/presentation/pages/main_scaffold.dart';
 import 'features/auth/presentation/pages/login_screen.dart';
 import 'features/auth/presentation/pages/register_screen.dart';
 import 'features/auth/presentation/pages/forgot_password_screen.dart';
+import 'features/auth/presentation/pages/email_verification_screen.dart';
 import 'features/cv_builder/presentation/pages/download_screen.dart';
+import 'features/cv_builder/presentation/cubit/cv_builder_cubit.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:seera/generated/l10n/app_localizations.dart';
 import 'core/services/locale_cubit.dart';
-
-// --- CONFIGURATION ---
-const bool useMockMode = false;
-
-// If you want to use Groq (Recommended Free alternative)
-// Get key at: https://console.groq.com/keys
-const String groqApiKey =
-    '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';
-
-// If you want to use OpenRouter (Access to everything)
-// Get key at: https://openrouter.ai/keys
-const String openRouterApiKey =
-    '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';
-
-// If you want to use Gemini
-const String geminiApiKey = 'AIzaSyBCHJ8nisqpiTDRlkmxceVVlKvk7GUTa3s';
-
-// Huggging Face
-const String huggingFaceApiKey = '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';
-// ---------------------
+import 'core/theme/theme_cubit.dart';
+import 'core/config/api_keys.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -95,33 +79,40 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => ChatCubit(aiService: aiService)),
+        BlocProvider(create: (context) => CVBuilderCubit()),
         BlocProvider(create: (context) => LocaleCubit()),
+        BlocProvider(create: (context) => ThemeCubit()),
       ],
       child: BlocBuilder<LocaleCubit, Locale>(
         builder: (context, locale) {
-          return MaterialApp(
-            title: 'Seera',
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: ThemeMode.system,
-            locale: locale,
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: const [Locale('en'), Locale('ar')],
-            home: const SplashScreen(),
-            routes: {
-              '/onboarding': (context) => const OnboardingScreen(),
-              '/login': (context) => const LoginScreen(),
-              '/register': (context) => const RegisterScreen(),
-              '/forgot-password': (context) => const ForgotPasswordScreen(),
-              '/chat': (context) => const MainScaffold(),
-              '/download': (context) => const DownloadScreen(),
+          return BlocBuilder<ThemeCubit, ThemeMode>(
+            builder: (context, themeMode) {
+              return MaterialApp(
+                title: 'Seera',
+                theme: AppTheme.lightTheme,
+                darkTheme: AppTheme.darkTheme,
+                themeMode: ThemeMode.dark, // Forced Dark Mode
+                locale: locale,
+                localizationsDelegates: const [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                supportedLocales: const [Locale('en'), Locale('ar')],
+                home: const SplashScreen(),
+                routes: {
+                  '/onboarding': (context) => const OnboardingScreen(),
+                  '/login': (context) => const LoginScreen(),
+                  '/register': (context) => const RegisterScreen(),
+                  '/forgot-password': (context) => const ForgotPasswordScreen(),
+                  '/verify-email': (context) => const EmailVerificationScreen(),
+                  '/chat': (context) => const MainScaffold(),
+                  '/download': (context) => const DownloadScreen(),
+                },
+                debugShowCheckedModeBanner: false,
+              );
             },
-            debugShowCheckedModeBanner: false,
           );
         },
       ),
@@ -145,9 +136,10 @@ class MyApp extends StatelessWidget {
 1. الاسم بالكامل.
 2. المسمى الوظيفي الحالي (أو اللي المستخدم عاوزه).
 3. البريد الإلكتروني.
-4. رقم الهاتف.
-5. الدولة.
-6. المدينة.
+4. هل لديك رابط LinkedIn أو GitHub؟ (اختياري).
+5. رقم الهاتف.
+6. الدولة.
+7. المدينة.
 7. نوع الوظيفة (يا ريت تختار بين: وظيفة عملية/خدمات "blue_collar" أو وظيفة تقنية/مكتبية "tech").
 8. الخبرات العملية (اسم الشركة، الدور، المدة، المهام). بعد كل خبرة، اسأل عن روابط أو صور لهذا العمل. ثم اسأل "هل هناك خبرات أخرى؟".
 9. التعليم.

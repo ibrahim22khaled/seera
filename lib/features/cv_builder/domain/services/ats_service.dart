@@ -46,11 +46,15 @@ class AtsService {
       }
     }
 
-    /// PROJECTS / PORTFOLIO (IMAGES → LINKS)
-    if (data.attachments.isNotEmpty) {
+    /// PROJECTS
+    if (data.projects.isNotEmpty) {
       buffer.writeln('Projects');
-      for (final item in data.attachments) {
-        buffer.writeln('- ${item.title}: ${item.url}');
+      for (final item in data.projects) {
+        buffer.writeln('- ${item.title}');
+        if (item.role.isNotEmpty) buffer.writeln('  Role: ${item.role}');
+        if (item.url.isNotEmpty) buffer.writeln('  Link: ${item.url}');
+        if (item.description.isNotEmpty)
+          buffer.writeln('  ${item.description}');
       }
       buffer.writeln();
     }

@@ -49,7 +49,7 @@ class ChatScreenContent extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: TextButton(
-              onPressed: () => context.read<ChatCubit>().generateCV(),
+              onPressed: () => context.read<ChatCubit>().generateCV(l10n),
               style: TextButton.styleFrom(
                 backgroundColor: const Color(0xFF1E293B),
                 shape: RoundedRectangleBorder(
@@ -116,9 +116,9 @@ class ChatScreenContent extends StatelessWidget {
                 ),
                 ListTile(
                   leading: const Icon(Icons.add, color: Colors.blue),
-                  title: const Text(
-                    'بدء محادثة جديدة',
-                    style: TextStyle(color: Colors.white),
+                  title: Text(
+                    l10n.startNewChat,
+                    style: const TextStyle(color: Colors.white),
                   ),
                   onTap: () {
                     context.read<ChatCubit>().createNewSession();
@@ -144,7 +144,9 @@ class ChatScreenContent extends StatelessWidget {
                           size: 20,
                         ),
                         title: Text(
-                          session.title,
+                          session.title == '__new_chat__'
+                              ? l10n.newChat
+                              : session.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -162,19 +164,21 @@ class ChatScreenContent extends StatelessWidget {
                               context: context,
                               builder: (dialogContext) => AlertDialog(
                                 backgroundColor: AppTheme.surfaceBg,
-                                title: const Text(
-                                  'حذف المحادثة؟',
-                                  style: TextStyle(color: Colors.white),
+                                title: Text(
+                                  l10n.deleteConversation,
+                                  style: const TextStyle(color: Colors.white),
                                 ),
-                                content: const Text(
-                                  'هل أنت متأكد أنك تريد حذف هذه المحادثة؟ لا يمكن التراجع عن هذا الفعل.',
-                                  style: TextStyle(color: AppTheme.textMuted),
+                                content: Text(
+                                  l10n.deleteConfirmation,
+                                  style: const TextStyle(
+                                    color: AppTheme.textMuted,
+                                  ),
                                 ),
                                 actions: [
                                   TextButton(
                                     onPressed: () =>
                                         Navigator.pop(dialogContext),
-                                    child: const Text('إلغاء'),
+                                    child: Text(l10n.cancel),
                                   ),
                                   TextButton(
                                     onPressed: () {
@@ -183,9 +187,11 @@ class ChatScreenContent extends StatelessWidget {
                                       );
                                       Navigator.pop(dialogContext);
                                     },
-                                    child: const Text(
-                                      'حذف',
-                                      style: TextStyle(color: Colors.redAccent),
+                                    child: Text(
+                                      l10n.delete,
+                                      style: const TextStyle(
+                                        color: Colors.redAccent,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -223,7 +229,7 @@ class ChatScreenContent extends StatelessWidget {
                     ),
                     onTap: () async {
                       await FirebaseAuth.instance.signOut();
-                      Fluttertoast.showToast(msg: 'You signed out');
+                      Fluttertoast.showToast(msg: l10n.signedOut);
                       if (context.mounted) Navigator.pop(context);
                     },
                   ),
@@ -269,9 +275,9 @@ class ChatScreenContent extends StatelessWidget {
                       color: AppTheme.surfaceBg,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text(
-                      'TODAY',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.today,
+                      style: const TextStyle(
                         color: AppTheme.textMuted,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
@@ -279,7 +285,7 @@ class ChatScreenContent extends StatelessWidget {
                     ),
                   ),
                 ),
-                Expanded(child: _buildMessagesList(state)),
+                Expanded(child: _buildMessagesList(state, l10n)),
                 _buildInputArea(context, controller, l10n, state),
               ],
             );
@@ -289,9 +295,9 @@ class ChatScreenContent extends StatelessWidget {
     );
   }
 
-  Widget _buildMessagesList(ChatState state) {
+  Widget _buildMessagesList(ChatState state, AppLocalizations l10n) {
     if (state is ChatInitial) {
-      return const Center(child: Text('Start chatting to build your CV!'));
+      return Center(child: Text(l10n.startChatting));
     } else if (state is ChatLoading && state.sessions.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -401,25 +407,20 @@ class ChatScreenContent extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              color: AppTheme.surfaceBg,
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.add, color: AppTheme.textMuted),
-              onPressed: () => context.read<ChatCubit>().pickImage(),
-            ),
-          ),
-          const SizedBox(width: 8),
           Expanded(
             child: TextField(
               controller: controller,
               decoration: InputDecoration(
                 hintText: l10n.typeYourResponse,
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.mic_none, color: AppTheme.textMuted),
-                  onPressed: () => context.read<ChatCubit>().toggleListening(),
+                filled: true,
+                fillColor: AppTheme.surfaceBg,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
                 ),
               ),
             ),
@@ -434,7 +435,7 @@ class ChatScreenContent extends StatelessWidget {
               icon: const Icon(Icons.send, color: Colors.white),
               onPressed: () {
                 if (controller.text.isNotEmpty) {
-                  context.read<ChatCubit>().sendMessage(controller.text);
+                  context.read<ChatCubit>().sendMessage(controller.text, l10n);
                   controller.clear();
                 }
               },
@@ -446,6 +447,8 @@ class ChatScreenContent extends StatelessWidget {
   }
 
   Widget _buildVoiceRecordingUI(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: const BoxDecoration(
@@ -474,7 +477,10 @@ class ChatScreenContent extends StatelessWidget {
               color: Colors.redAccent,
               size: 40,
             ),
-            onPressed: () => context.read<ChatCubit>().toggleListening(),
+            onPressed: () => context.read<ChatCubit>().toggleListening(
+              l10n,
+              Localizations.localeOf(context).languageCode,
+            ),
           ),
         ],
       ),
@@ -504,11 +510,11 @@ class ChatScreenContent extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               if (controller.text.isNotEmpty) {
-                context.read<ChatCubit>().sendMessage(controller.text);
+                context.read<ChatCubit>().sendMessage(controller.text, l10n);
                 controller.clear();
               }
             },
-            child: const Text('حفظ الملخص'),
+            child: Text(l10n.saveSummary),
           ),
         ],
       ),
@@ -525,9 +531,12 @@ class ChatScreenContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'أضف مهاراتك واحدة تلو الأخرى:',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          Text(
+            l10n.addSkillsInstruction,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 8),
           Row(
@@ -554,7 +563,10 @@ class ChatScreenContent extends StatelessWidget {
                 ),
                 onPressed: () {
                   if (controller.text.isNotEmpty) {
-                    context.read<ChatCubit>().sendMessage(controller.text);
+                    context.read<ChatCubit>().sendMessage(
+                      controller.text,
+                      l10n,
+                    );
                     controller.clear();
                   }
                 },
@@ -563,11 +575,13 @@ class ChatScreenContent extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           TextButton(
-            onPressed: () =>
-                context.read<ChatCubit>().sendMessage('انتهيت من المهارات'),
-            child: const Text(
-              'انتهيت من إضافة المهارات',
-              style: TextStyle(color: AppTheme.textMuted),
+            onPressed: () => context.read<ChatCubit>().sendMessage(
+              l10n.doneWithSkills,
+              l10n,
+            ),
+            child: Text(
+              l10n.finishedAddingSkills,
+              style: const TextStyle(color: AppTheme.textMuted),
             ),
           ),
         ],
@@ -576,16 +590,24 @@ class ChatScreenContent extends StatelessWidget {
   }
 
   Widget _buildLanguageInput(BuildContext context, AppLocalizations l10n) {
-    final levels = ['Beginner', 'Intermediate', 'Advanced', 'Native'];
+    final levels = [
+      l10n.beginner,
+      l10n.intermediate,
+      l10n.advanced,
+      l10n.native,
+    ];
 
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'اختر مستوى الإجادة للغة:',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          Text(
+            l10n.selectLanguageLevel,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 12),
           Wrap(
@@ -596,7 +618,7 @@ class ChatScreenContent extends StatelessWidget {
                 backgroundColor: AppTheme.surfaceBg,
                 labelStyle: const TextStyle(color: Colors.white),
                 onPressed: () {
-                  context.read<ChatCubit>().sendMessage(level);
+                  context.read<ChatCubit>().sendMessage(level, l10n);
                 },
               );
             }).toList(),

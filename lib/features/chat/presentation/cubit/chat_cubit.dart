@@ -1,585 +1,339 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
-import 'package:printing/printing.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:seera/core/services/ai_service.dart';
 import 'package:seera/core/services/voice_service.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:seera/features/cv_builder/data/models/cv_model.dart';
 import 'package:seera/features/cv_builder/domain/services/pdf_service.dart';
+import 'package:seera/generated/l10n/app_localizations.dart';
 
-import 'package:seera/core/services/validator.dart';
+import '../../domain/handlers/session_handler.dart';
+import '../../domain/handlers/voice_handler.dart';
+import '../../domain/handlers/field_handler.dart';
+import '../../domain/handlers/cv_handler.dart';
+import '../../data/models/chat_session.dart';
 
 part 'chat_state.dart';
 
 class ChatCubit extends Cubit<ChatState> {
   final ChatService _aiService;
-  final VoiceService _voiceService;
-  final PdfService _pdfService;
-  final List<ChatSession> _sessions = [];
-  String _currentSessionId = '';
-  String? _currentField; // To track what we are validating
-  String _selectedLocale = 'ar-EG'; // Default to Egyptian Arabic
+  final SessionHandler _sessionHandler;
+  final VoiceHandler _voiceHandler;
+  final FieldHandler _fieldHandler;
+  final CvHandler _cvHandler;
+
+  // We need a way to access localization, but Cubit doesn't have context.
+  // We can pass the L10n object to methods or use a rigorous approach.
+  // For simplicity in this refactor, we will accept AppLocalizations in methods
+  // or use a callback if strictly necessary.
+  // However, simpler is: passing AppLocalizations to the method calls from UI.
 
   ChatCubit({
     required ChatService aiService,
     VoiceService? voiceService,
     PdfService? pdfService,
   }) : _aiService = aiService,
-       _voiceService = voiceService ?? VoiceServiceImpl(),
-       _pdfService = pdfService ?? PdfServiceImpl(),
+       _sessionHandler = SessionHandler(),
+       _voiceHandler = VoiceHandler(voiceService ?? VoiceServiceImpl()),
+       _fieldHandler = FieldHandler(),
+       _cvHandler = CvHandler(aiService, pdfService: pdfService),
        super(ChatInitial()) {
     _loadSessions();
   }
 
   Future<void> _loadSessions() async {
     final prefs = await SharedPreferences.getInstance();
-    final sessionsJson = prefs.getStringList('chat_sessions') ?? [];
+    await _sessionHandler.load(prefs);
 
-    if (sessionsJson.isNotEmpty) {
-      _sessions.clear();
-      for (var jsonStr in sessionsJson) {
-        _sessions.add(ChatSession.fromJson(jsonDecode(jsonStr)));
-      }
-      _currentSessionId =
-          prefs.getString('current_session_id') ??
-          (_sessions.isNotEmpty ? _sessions.first.id : '');
-      _selectedLocale = prefs.getString('selected_locale') ?? 'ar-EG';
+    if (_sessionHandler.sessions.isEmpty) {
+      // Create default session
+      await createNewSession();
     } else {
-      // Migrate old history if exists
-      final oldHistory = prefs.getStringList('chat_history') ?? [];
-      if (oldHistory.isNotEmpty) {
-        final session = ChatSession(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          title: 'Migrated Chat',
-          messages: oldHistory,
-        );
-        _sessions.add(session);
-        _currentSessionId = session.id;
-        await _saveSessions();
-        await prefs.remove('chat_history');
-      } else {
-        await createNewSession();
-        return;
-      }
+      _emitLoaded();
+      _detectField();
     }
-
-    final currentSession = _sessions.firstWhere(
-      (s) => s.id == _currentSessionId,
-      orElse: () => _sessions.first,
-    );
-    _currentSessionId = currentSession.id;
-
-    emit(
-      ChatLoaded(
-        List.from(currentSession.messages),
-        sessions: List.from(_sessions),
-        currentSessionId: _currentSessionId,
-        currentField: _currentField,
-        selectedLocale: _selectedLocale,
-      ),
-    );
-    _detectCurrentField();
-  }
-
-  Future<void> _saveSessions() async {
-    final prefs = await SharedPreferences.getInstance();
-    final sessionsJson = _sessions.map((s) => jsonEncode(s.toJson())).toList();
-    await prefs.setStringList('chat_sessions', sessionsJson);
-    await prefs.setString('current_session_id', _currentSessionId);
-    await prefs.setString('selected_locale', _selectedLocale);
   }
 
   Future<void> createNewSession() async {
+    final prefs = await SharedPreferences.getInstance();
     final newSession = ChatSession(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: 'محادثة جديدة',
+      title:
+          '__new_chat__', // Placeholder, should be replaced with localized string in UI
       messages: [],
     );
-    _sessions.insert(0, newSession);
-    _currentSessionId = newSession.id;
-    await _saveSessions();
-    emit(
-      ChatLoaded(
-        [],
-        sessions: List.from(_sessions),
-        currentSessionId: _currentSessionId,
-        currentField: _currentField,
-        selectedLocale: _selectedLocale,
-      ),
-    );
-    _currentField = 'name';
+    _sessionHandler.sessions.insert(0, newSession);
+    _sessionHandler.currentSessionId = newSession.id;
+    await _sessionHandler.save(prefs);
+    _emitLoaded();
+    _fieldHandler.currentField = 'name';
   }
 
   Future<void> switchSession(String sessionId) async {
-    _currentSessionId = sessionId;
-    final session = _sessions.firstWhere((s) => s.id == sessionId);
-    emit(
-      ChatLoaded(
-        List.from(session.messages),
-        sessions: List.from(_sessions),
-        currentSessionId: _currentSessionId,
-        currentField: _currentField,
-        selectedLocale: _selectedLocale,
-      ),
-    );
-    await _saveSessions();
-    _detectCurrentField();
+    final prefs = await SharedPreferences.getInstance();
+    _sessionHandler.currentSessionId = sessionId;
+    await _sessionHandler.save(prefs);
+    _emitLoaded();
+    _detectField();
   }
 
   Future<void> deleteSession(String sessionId) async {
-    _sessions.removeWhere((s) => s.id == sessionId);
-    if (_sessions.isEmpty) {
+    final prefs = await SharedPreferences.getInstance();
+    _sessionHandler.sessions.removeWhere((s) => s.id == sessionId);
+    if (_sessionHandler.sessions.isEmpty) {
       await createNewSession();
     } else {
-      if (_currentSessionId == sessionId) {
-        _currentSessionId = _sessions.first.id;
+      if (_sessionHandler.currentSessionId == sessionId) {
+        _sessionHandler.currentSessionId = _sessionHandler.sessions.first.id;
       }
-      await _saveSessions();
-      await switchSession(_currentSessionId);
+      await _sessionHandler.save(prefs);
+      await switchSession(_sessionHandler.currentSessionId);
     }
   }
 
-  void _detectCurrentField() {
-    final currentSession = _sessions.firstWhere(
-      (s) => s.id == _currentSessionId,
-    );
+  void _detectField() {
+    final currentSession = _sessionHandler.currentSession;
     if (currentSession.messages.isEmpty) {
-      _currentField = 'name';
+      _fieldHandler.currentField = 'name';
       return;
     }
-    final lastAiMessage = currentSession.messages
-        .lastWhere((m) => m.startsWith('AI:'), orElse: () => '')
-        .toLowerCase();
+    final lastAiMessage = currentSession.messages.lastWhere(
+      (m) => m.startsWith('AI:'),
+      orElse: () => '',
+    );
 
-    final Map<String, List<String>> fieldKeywords = {
-      'jobType': [
-        'وظيفة',
-        'نوع',
-        'tech',
-        'blue_collar',
-        'blue collar',
-        'service',
-        'job',
-        'type',
-      ],
-      'name': ['اسم', 'name'],
-      'email': ['بريد', 'إيميل', 'email'],
-      'phone': ['تليفون', 'موبايل', 'phone', 'mobile', 'رقم'],
-      'country': ['دولة', 'بلد', 'country'],
-      'city': ['مدينة', 'city'],
-      'jobTitle': ['مسمى', 'لقب', 'job', 'title'],
-      'company': ['شركة', 'مكان', 'company'],
-      'role': ['دور', 'مسؤولي', 'مهام', 'role', 'tasks'],
-      'link': ['رابط', 'لينك', 'link', 'url'],
-      'duration': ['مدة', 'من', 'إلى', 'تاريخ', 'duration', 'date', 'year'],
-      'summary': ['ملخص', 'summary', 'نبذة'],
-      'skills': ['مهارات', 'skills', 'خبرات تقنية'],
-      'language': ['لغة', 'languages', 'arabic', 'english', 'فرنسي'],
-      'education': ['تعليم', 'شهادة', 'جامعة', 'education', 'certificate'],
-    };
-
-    String? bestMatch;
-    int maxIndex = -1;
-
-    fieldKeywords.forEach((field, keywords) {
-      for (var keyword in keywords) {
-        final index = lastAiMessage.lastIndexOf(keyword.toLowerCase());
-        if (index > maxIndex) {
-          maxIndex = index;
-          bestMatch = field;
-        }
-      }
-    });
-
-    if (bestMatch != null) {
-      _currentField = bestMatch;
-    }
+    _fieldHandler.detectField(lastAiMessage);
   }
 
-  Future<void> sendMessage(String message) async {
-    final currentSessionIndex = _sessions.indexWhere(
-      (s) => s.id == _currentSessionId,
+  void _emitLoaded({bool isListening = false}) {
+    emit(
+      ChatLoaded(
+        List<String>.from(_sessionHandler.currentSession.messages),
+        isListening: isListening,
+        sessions: List<ChatSession>.from(_sessionHandler.sessions),
+        currentSessionId: _sessionHandler.currentSessionId,
+        currentField: _fieldHandler.currentField,
+      ),
     );
-    if (currentSessionIndex == -1) return;
+  }
 
-    final currentMessages = _sessions[currentSessionIndex].messages;
+  Future<void> sendMessage(String message, AppLocalizations l10n) async {
+    final currentSession = _sessionHandler.currentSession;
+    final prefs = await SharedPreferences.getInstance();
 
-    // Basic validation before sending
-    if (_currentField != null) {
-      final error = Validator.validateField(_currentField!, message);
-      if (error != null) {
-        currentMessages.add('You: $message');
-        currentMessages.add('AI: $error');
-        emit(
-          ChatLoaded(
-            List.from(currentMessages),
-            sessions: List.from(_sessions),
-            currentSessionId: _currentSessionId,
-            currentField: _currentField,
-            selectedLocale: _selectedLocale,
-          ),
+    // Field Validation
+    // We validate against the *current* field we are expecting.
+    final fieldToValidate = _fieldHandler.currentField ?? 'unknown';
+    final error = _fieldHandler.validate(fieldToValidate, message, l10n);
+    if (error != null) {
+      currentSession.messages.add('You: $message');
+      currentSession.messages.add('AI: $error');
+      await _sessionHandler.save(prefs);
+      _emitLoaded();
+      return;
+    }
+
+    currentSession.messages.add('You: $message');
+    // Update title logic
+    if (currentSession.messages.length == 1 ||
+        currentSession.title == '__new_chat__') {
+      // Find session index
+      final index = _sessionHandler.sessions.indexOf(currentSession);
+      if (index != -1) {
+        _sessionHandler.sessions[index] = ChatSession(
+          id: currentSession.id,
+          title: message.length > 30
+              ? '${message.substring(0, 30)}...'
+              : message,
+          messages: currentSession.messages,
         );
-        await _saveSessions();
-        return;
       }
     }
 
-    currentMessages.add('You: $message');
-    // Update title based on first message
-    if (currentMessages.length == 1 ||
-        _sessions[currentSessionIndex].title == 'New Chat' ||
-        _sessions[currentSessionIndex].title == 'محادثة جديدة') {
-      _sessions[currentSessionIndex] = ChatSession(
-        id: _sessions[currentSessionIndex].id,
-        title: message.length > 30 ? '${message.substring(0, 30)}...' : message,
-        messages: currentMessages,
-      );
-    }
-
-    emit(
-      ChatLoaded(
-        List.from(currentMessages),
-        sessions: List.from(_sessions),
-        currentSessionId: _currentSessionId,
-        currentField: _currentField,
-        selectedLocale: _selectedLocale,
-      ),
-    );
-    await _saveSessions();
+    await _sessionHandler.save(prefs);
+    _emitLoaded();
 
     try {
       final aiResponse = await _aiService.sendMessage(
         message,
-        List.from(currentMessages),
+        List<String>.from(currentSession.messages),
       );
-      currentMessages.add('AI: $aiResponse');
+      currentSession.messages.add('AI: $aiResponse');
 
-      emit(
-        ChatLoaded(
-          List.from(currentMessages),
-          sessions: List.from(_sessions),
-          currentSessionId: _currentSessionId,
-          currentField: _currentField,
-          selectedLocale: _selectedLocale,
-        ),
-      );
-      await _saveSessions();
-      _detectCurrentField();
+      await _sessionHandler.save(prefs);
+      _detectField();
+      _emitLoaded();
     } catch (e) {
       emit(
         ChatError(
-          'حصل مشكلة في الاتصال: $e',
-          List.from(currentMessages),
-          sessions: List.from(_sessions),
-          currentSessionId: _currentSessionId,
-          currentField: _currentField,
-          selectedLocale: _selectedLocale,
+          l10n.connectionError(e.toString()),
+          List<String>.from(currentSession.messages),
+          sessions: List<ChatSession>.from(_sessionHandler.sessions),
+          currentSessionId: _sessionHandler.currentSessionId,
+          currentField: _fieldHandler.currentField,
         ),
       );
     }
   }
 
-  Future<void> pickImage() async {
-    final currentSessionIndex = _sessions.indexWhere(
-      (s) => s.id == _currentSessionId,
-    );
-    if (currentSessionIndex == -1) return;
-    final currentMessages = _sessions[currentSessionIndex].messages;
+  Future<void> pickImage(AppLocalizations l10n) async {
+    final currentSession = _sessionHandler.currentSession;
+    final prefs = await SharedPreferences.getInstance();
 
     try {
       final picker = ImagePicker();
       final image = await picker.pickImage(source: ImageSource.gallery);
       if (image != null) {
-        final attachmentUrl = 'Image from gallery: ${image.name}';
-        currentMessages.add('You: [Attached Image] $attachmentUrl');
-        emit(
-          ChatLoaded(
-            List.from(currentMessages),
-            sessions: List.from(_sessions),
-            currentSessionId: _currentSessionId,
-            currentField: _currentField,
-            selectedLocale: _selectedLocale,
-          ),
-        );
-        await _saveSessions();
+        final attachmentUrl = l10n.galleryImageAttached(image.name);
+        currentSession.messages.add('You: [Attached Image] $attachmentUrl');
+        await _sessionHandler.save(prefs);
+        _emitLoaded();
 
-        currentMessages.add(
-          'AI: تمام، تم حفظ الصورة كنموذج أعمال. هل فيه حاجة تانية حابب تضيفها؟',
-        );
-        emit(
-          ChatLoaded(
-            List.from(currentMessages),
-            sessions: List.from(_sessions),
-            currentSessionId: _currentSessionId,
-            currentField: _currentField,
-            selectedLocale: _selectedLocale,
-          ),
-        );
-        await _saveSessions();
+        currentSession.messages.add('AI: ${l10n.imageSavedAI}');
+        await _sessionHandler.save(prefs);
+        _emitLoaded();
       }
     } catch (e) {
       emit(
         ChatError(
-          'مش قادرين نفتح الملفات. لو لسه ضايف الميزة دي، لازم تقفل البرنامج وتفتحه تاني (Full Restart) عشان تشتغل.',
-          List.from(currentMessages),
-          sessions: List.from(_sessions),
-          currentSessionId: _currentSessionId,
-          currentField: _currentField,
-          selectedLocale: _selectedLocale,
+          l10n.fileOpenError,
+          List<String>.from(currentSession.messages),
+          sessions: List<ChatSession>.from(_sessionHandler.sessions),
+          currentSessionId: _sessionHandler.currentSessionId,
+          currentField: _fieldHandler.currentField,
         ),
       );
     }
   }
 
-  Future<void> clearChat() async {
-    await deleteSession(_currentSessionId);
-  }
+  Future<void> toggleListening(AppLocalizations l10n, String localeId) async {
+    final currentSession = _sessionHandler.currentSession;
 
-  Future<void> toggleListening() async {
-    final currentSessionIndex = _sessions.indexWhere(
-      (s) => s.id == _currentSessionId,
-    );
-    if (currentSessionIndex == -1) return;
-    final currentMessages = _sessions[currentSessionIndex].messages;
-
-    // If already listening, stop it
-    if (_voiceService.isListening) {
-      try {
-        await _voiceService.stopListening();
-        emit(
-          ChatLoaded(
-            List.from(currentMessages),
-            isListening: false,
-            sessions: List.from(_sessions),
-            currentSessionId: _currentSessionId,
-            currentField: _currentField,
-            selectedLocale: _selectedLocale,
-          ),
-        );
-      } catch (e) {
-        print('Error stopping listening: $e');
-        // Even if stopping fails, update the UI
-        emit(
-          ChatLoaded(
-            List.from(currentMessages),
-            isListening: false,
-            sessions: List.from(_sessions),
-            currentSessionId: _currentSessionId,
-            currentField: _currentField,
-            selectedLocale: _selectedLocale,
-          ),
-        );
-      }
+    if (_voiceHandler.isListening) {
+      await _voiceHandler.stopListening();
+      _emitLoaded(isListening: false);
       return;
     }
 
-    // Start listening
     try {
-      print('Attempting to start listening with locale: $_selectedLocale');
-
-      final available = await _voiceService.startListening((text) {
-        print('Voice result received: $text');
+      final available = await _voiceHandler.startListening((text) {
         if (text.isNotEmpty) {
-          // Stop listening after receiving text
-          _voiceService.stopListening();
-          // Send the message
-          sendMessage(text);
+          _voiceHandler.stopListening();
+          sendMessage(text, l10n);
         }
-      }, localeId: _selectedLocale);
-
-      print('Voice service available: $available');
+      }, localeId); // Passing localeId correctly
 
       if (available) {
-        emit(
-          ChatLoaded(
-            List.from(currentMessages),
-            isListening: true,
-            sessions: List.from(_sessions),
-            currentSessionId: _currentSessionId,
-            currentField: _currentField,
-            selectedLocale: _selectedLocale,
-          ),
-        );
+        _emitLoaded(isListening: true);
       } else {
-        // Service not available (permission denied or initialization failed)
         emit(
           ChatError(
-            'المايك مش شغال يا بطل، اتأكد من الصلاحيات أو جرب تكتب.',
-            List.from(currentMessages),
-            sessions: List.from(_sessions),
-            currentSessionId: _currentSessionId,
-            currentField: _currentField,
-            selectedLocale: _selectedLocale,
+            l10n.micNotWorking,
+            List<String>.from(currentSession.messages),
+            sessions: List<ChatSession>.from(_sessionHandler.sessions),
+            currentSessionId: _sessionHandler.currentSessionId,
+            currentField: _fieldHandler.currentField,
           ),
         );
       }
-    } catch (e, stackTrace) {
-      print('Error in toggleListening: $e');
-      print('Stack trace: $stackTrace');
-
-      // Provide more specific error message
-      String errorMessage = 'حصلت مشكلة في المايك: $e';
-
+    } catch (e) {
+      String errorMessage = l10n.micGenericError(e.toString());
       if (e.toString().contains('permission')) {
-        errorMessage =
-            'المايك محتاج صلاحيات. روح للإعدادات وفعّل صلاحية المايكروفون.';
+        errorMessage = l10n.micPermissionError;
       } else if (e.toString().contains('initialize')) {
-        errorMessage = 'مش قادرين نشغل المايك. جرب تقفل البرنامج وتفتحه تاني.';
+        errorMessage = l10n.micInitError;
       }
 
       emit(
         ChatError(
           errorMessage,
-          List.from(currentMessages),
-          sessions: List.from(_sessions),
-          currentSessionId: _currentSessionId,
-          currentField: _currentField,
-          selectedLocale: _selectedLocale,
+          List<String>.from(currentSession.messages),
+          sessions: List<ChatSession>.from(_sessionHandler.sessions),
+          currentSessionId: _sessionHandler.currentSessionId,
+          currentField: _fieldHandler.currentField,
         ),
       );
     }
   }
 
-  Future<void> generateCV() async {
-    final currentSessionIndex = _sessions.indexWhere(
-      (s) => s.id == _currentSessionId,
-    );
-    if (currentSessionIndex == -1) return;
-    final currentMessages = _sessions[currentSessionIndex].messages;
+  Future<void> generateCV(AppLocalizations l10n) async {
+    final currentSession = _sessionHandler.currentSession;
 
-    try {
-      // Check for main data before allowing generation
-      final history = currentMessages.join('\n').toLowerCase();
-      final hasName = history.contains('اسم') || history.contains('name');
-      final hasEmail = history.contains('@');
-      final hasPhone = history.contains('01') || history.contains('+');
-      final hasJobTitle =
-          history.contains('مسمى') ||
-          history.contains('عنوان') ||
-          history.contains('job');
-
-      if (!hasName || !hasEmail || !hasPhone || !hasJobTitle) {
-        emit(
-          ChatError(
-            'لسه محتاجين نجمع باقي البيانات الأساسية (الاسم، البريد، الهاتف، المسمى الوظيفي) عشان نقدر نعمل الـ CV.',
-            List.from(currentMessages),
-            sessions: List.from(_sessions),
-            currentSessionId: _currentSessionId,
-            currentField: _currentField,
-            selectedLocale: _selectedLocale,
-          ),
-        );
-        return;
-      }
-
-      emit(
-        ChatLoading(
-          sessions: List.from(_sessions),
-          currentSessionId: _currentSessionId,
-          currentField: _currentField,
-          selectedLocale: _selectedLocale,
-        ),
-      );
-      final jsonString = await _aiService.generateCV(currentMessages);
-
-      // Clean up JSON string if it contains markdown code blocks
-      final cleanJson = jsonString
-          .replaceAll('```json', '')
-          .replaceAll('```', '');
-
-      final Map<String, dynamic> jsonData = jsonDecode(cleanJson);
-      final cvModel = CVModel.fromJson(jsonData);
-
-      // Instead of generating PDF, we go to review state
-      emit(
-        ChatReview(
-          List.from(currentMessages),
-          cvModel,
-          sessions: List.from(_sessions),
-          currentSessionId: _currentSessionId,
-          currentField: _currentField,
-          selectedLocale: _selectedLocale,
-        ),
-      );
-    } catch (e) {
+    if (!_cvHandler.canGenerate(currentSession.messages)) {
       emit(
         ChatError(
-          'حصل مشكلة واحنا بنجمع بياناتك: $e',
-          List.from(currentMessages),
-          sessions: List.from(_sessions),
-          currentSessionId: _currentSessionId,
-          currentField: _currentField,
-          selectedLocale: _selectedLocale,
+          l10n.missingBasicInfo,
+          List<String>.from(currentSession.messages),
+          sessions: List<ChatSession>.from(_sessionHandler.sessions),
+          currentSessionId: _sessionHandler.currentSessionId,
+          currentField: _fieldHandler.currentField,
         ),
       );
+      return;
     }
-  }
 
-  Future<void> finalizePdf(CVModel validatedData) async {
-    final currentSessionIndex = _sessions.indexWhere(
-      (s) => s.id == _currentSessionId,
-    );
-    if (currentSessionIndex == -1) return;
-    final currentMessages = _sessions[currentSessionIndex].messages;
-
-    try {
-      emit(
-        ChatLoading(
-          sessions: List.from(_sessions),
-          currentSessionId: _currentSessionId,
-          currentField: _currentField,
-          selectedLocale: _selectedLocale,
-        ),
-      );
-
-      final file = await _pdfService.generatePdf(validatedData);
-
-      await Printing.layoutPdf(
-        onLayout: (format) => file.readAsBytes(),
-        name: '${validatedData.fullName}_Seera_CV.pdf',
-      );
-
-      currentMessages.add('AI: تم تجهيز الـ CV يا بطل! ربنا يوفقك.');
-      emit(
-        ChatLoaded(
-          List.from(currentMessages),
-          sessions: List.from(_sessions),
-          currentSessionId: _currentSessionId,
-          currentField: _currentField,
-          selectedLocale: _selectedLocale,
-        ),
-      );
-      await _saveSessions();
-    } catch (e) {
-      emit(
-        ChatError(
-          'حصل مشكلة في الطباعة: $e',
-          List.from(currentMessages),
-          sessions: List.from(_sessions),
-          currentSessionId: _currentSessionId,
-          currentField: _currentField,
-          selectedLocale: _selectedLocale,
-        ),
-      );
-    }
-  }
-
-  Future<void> updateLocale(String locale) async {
-    _selectedLocale = locale;
-    await _voiceService.setLocale(locale);
-    final currentSession = _sessions.firstWhere(
-      (s) => s.id == _currentSessionId,
-    );
     emit(
-      ChatLoaded(
-        List.from(currentSession.messages),
-        sessions: List.from(_sessions),
-        currentSessionId: _currentSessionId,
-        currentField: _currentField,
-        selectedLocale: _selectedLocale,
+      ChatLoading(
+        sessions: List<ChatSession>.from(_sessionHandler.sessions),
+        currentSessionId: _sessionHandler.currentSessionId,
+        currentField: _fieldHandler.currentField,
       ),
     );
-    await _saveSessions();
+
+    try {
+      final cvModel = await _cvHandler.generateCV(currentSession.messages);
+
+      emit(
+        ChatReview(
+          List<String>.from(currentSession.messages),
+          cvModel,
+          sessions: List<ChatSession>.from(_sessionHandler.sessions),
+          currentSessionId: _sessionHandler.currentSessionId,
+          currentField: _fieldHandler.currentField,
+        ),
+      );
+    } catch (e) {
+      emit(
+        ChatError(
+          l10n.dataCollectionError(e.toString()),
+          List<String>.from(currentSession.messages),
+          sessions: List<ChatSession>.from(_sessionHandler.sessions),
+          currentSessionId: _sessionHandler.currentSessionId,
+          currentField: _fieldHandler.currentField,
+        ),
+      );
+    }
+  }
+
+  Future<void> finalizePdf(CVModel validatedData, AppLocalizations l10n) async {
+    final currentSession = _sessionHandler.currentSession;
+    final prefs = await SharedPreferences.getInstance();
+
+    emit(
+      ChatLoading(
+        sessions: List<ChatSession>.from(_sessionHandler.sessions),
+        currentSessionId: _sessionHandler.currentSessionId,
+        currentField: _fieldHandler.currentField,
+      ),
+    );
+
+    try {
+      await _cvHandler.generateAndPrintPdf(validatedData, l10n);
+
+      currentSession.messages.add('AI: ${l10n.cvReady}');
+      await _sessionHandler.save(prefs);
+
+      _emitLoaded();
+    } catch (e) {
+      emit(
+        ChatError(
+          l10n.printingError(e.toString()),
+          List<String>.from(currentSession.messages),
+          sessions: List<ChatSession>.from(_sessionHandler.sessions),
+          currentSessionId: _sessionHandler.currentSessionId,
+          currentField: _fieldHandler.currentField,
+        ),
+      );
+    }
   }
 }

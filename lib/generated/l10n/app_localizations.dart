@@ -308,11 +308,11 @@ abstract class AppLocalizations {
   /// **'Confirm Password'**
   String get confirmPassword;
 
-  /// No description provided for @aiSettings.
+  /// No description provided for @langSettings.
   ///
   /// In en, this message translates to:
-  /// **'AI Settings'**
-  String get aiSettings;
+  /// **'Language settings'**
+  String get langSettings;
 
   /// No description provided for @primaryLanguage.
   ///
@@ -415,6 +415,648 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Network error. Please check your internet connection.'**
   String get networkError;
+
+  /// No description provided for @cvCreatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'CV created successfully!'**
+  String get cvCreatedSuccess;
+
+  /// No description provided for @printingError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error printing CV: {error}'**
+  String printingError(Object error);
+
+  /// No description provided for @micPermissionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone permission is required. Please enable it in settings.'**
+  String get micPermissionError;
+
+  /// No description provided for @micInitError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not initialize microphone. Please restart the app.'**
+  String get micInitError;
+
+  /// No description provided for @micGenericError.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone error: {error}'**
+  String micGenericError(Object error);
+
+  /// No description provided for @micNotWorking.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone is not working, please check permissions or type instead.'**
+  String get micNotWorking;
+
+  /// No description provided for @galleryImageAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'Image from gallery: {name}'**
+  String galleryImageAttached(Object name);
+
+  /// No description provided for @imageSavedAI.
+  ///
+  /// In en, this message translates to:
+  /// **'Image saved as work sample. Anything else to add?'**
+  String get imageSavedAI;
+
+  /// No description provided for @fileOpenError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open files. If you just added this feature, a full restart is required.'**
+  String get fileOpenError;
+
+  /// No description provided for @connectionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection error: {error}'**
+  String connectionError(Object error);
+
+  /// No description provided for @dataCollectionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error collecting your data: {error}'**
+  String dataCollectionError(Object error);
+
+  /// No description provided for @missingBasicInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'We still need basic info (Name, Email, Phone, Job Title) to generate the CV.'**
+  String get missingBasicInfo;
+
+  /// No description provided for @cvReady.
+  ///
+  /// In en, this message translates to:
+  /// **'CV is ready! Good luck.'**
+  String get cvReady;
+
+  /// No description provided for @newChat.
+  ///
+  /// In en, this message translates to:
+  /// **'New Chat'**
+  String get newChat;
+
+  /// No description provided for @startNewChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Start New Chat'**
+  String get startNewChat;
+
+  /// No description provided for @deleteConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Conversation?'**
+  String get deleteConversation;
+
+  /// No description provided for @deleteConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this conversation? This action cannot be undone.'**
+  String get deleteConfirmation;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @signedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'You signed out'**
+  String get signedOut;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY'**
+  String get today;
+
+  /// No description provided for @startChatting.
+  ///
+  /// In en, this message translates to:
+  /// **'Start chatting to build your CV!'**
+  String get startChatting;
+
+  /// No description provided for @summaryPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Write your professional summary here in detail...'**
+  String get summaryPlaceholder;
+
+  /// No description provided for @saveSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Summary'**
+  String get saveSummary;
+
+  /// No description provided for @addSkillsInstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your skills one by one:'**
+  String get addSkillsInstruction;
+
+  /// No description provided for @skillsPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Flutter, UI Design...'**
+  String get skillsPlaceholder;
+
+  /// No description provided for @finishedAddingSkills.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished adding skills'**
+  String get finishedAddingSkills;
+
+  /// No description provided for @doneWithSkills.
+  ///
+  /// In en, this message translates to:
+  /// **'Done with skills'**
+  String get doneWithSkills;
+
+  /// No description provided for @selectLanguageLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Select proficiency level for the language:'**
+  String get selectLanguageLevel;
+
+  /// No description provided for @beginner.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginner'**
+  String get beginner;
+
+  /// No description provided for @intermediate.
+  ///
+  /// In en, this message translates to:
+  /// **'Intermediate'**
+  String get intermediate;
+
+  /// No description provided for @advanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get advanced;
+
+  /// No description provided for @native.
+  ///
+  /// In en, this message translates to:
+  /// **'Native'**
+  String get native;
+
+  /// No description provided for @reviewData.
+  ///
+  /// In en, this message translates to:
+  /// **'Review Your Data'**
+  String get reviewData;
+
+  /// No description provided for @basicInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic Information'**
+  String get basicInfo;
+
+  /// No description provided for @fullNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get fullNameLabel;
+
+  /// No description provided for @emailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get emailLabel;
+
+  /// No description provided for @phoneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get phoneLabel;
+
+  /// No description provided for @cityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get cityLabel;
+
+  /// No description provided for @countryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Country'**
+  String get countryLabel;
+
+  /// No description provided for @targetCountryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Target Country'**
+  String get targetCountryLabel;
+
+  /// No description provided for @jobTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Job Title'**
+  String get jobTitleLabel;
+
+  /// No description provided for @summaryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get summaryLabel;
+
+  /// No description provided for @experienceSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Work Experience'**
+  String get experienceSection;
+
+  /// No description provided for @educationSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Education'**
+  String get educationSection;
+
+  /// No description provided for @skillsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Skills'**
+  String get skillsSection;
+
+  /// No description provided for @languagesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Languages'**
+  String get languagesSection;
+
+  /// No description provided for @projectsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects / Portfolio'**
+  String get projectsSection;
+
+  /// No description provided for @additionalInfoSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional Information'**
+  String get additionalInfoSection;
+
+  /// No description provided for @additionalInfoPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Any other information'**
+  String get additionalInfoPlaceholder;
+
+  /// No description provided for @addExperience.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Experience'**
+  String get addExperience;
+
+  /// No description provided for @addWorkExperience.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Work Experience'**
+  String get addWorkExperience;
+
+  /// No description provided for @add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// No description provided for @editExperience.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Experience'**
+  String get editExperience;
+
+  /// No description provided for @jobTitleField.
+  ///
+  /// In en, this message translates to:
+  /// **'Job Title'**
+  String get jobTitleField;
+
+  /// No description provided for @companyField.
+  ///
+  /// In en, this message translates to:
+  /// **'Company'**
+  String get companyField;
+
+  /// No description provided for @locationField.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get locationField;
+
+  /// No description provided for @durationField.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration (e.g., 2020 - 2022)'**
+  String get durationField;
+
+  /// No description provided for @responsibilitiesField.
+  ///
+  /// In en, this message translates to:
+  /// **'Responsibilities (separate with -)'**
+  String get responsibilitiesField;
+
+  /// No description provided for @portfolioLinksField.
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio links (separate with space)'**
+  String get portfolioLinksField;
+
+  /// No description provided for @portfolioLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio / Links:'**
+  String get portfolioLabel;
+
+  /// No description provided for @addEducation.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Education'**
+  String get addEducation;
+
+  /// No description provided for @degreeField.
+  ///
+  /// In en, this message translates to:
+  /// **'Degree'**
+  String get degreeField;
+
+  /// No description provided for @institutionField.
+  ///
+  /// In en, this message translates to:
+  /// **'Institution'**
+  String get institutionField;
+
+  /// No description provided for @periodField.
+  ///
+  /// In en, this message translates to:
+  /// **'Period'**
+  String get periodField;
+
+  /// No description provided for @addSkill.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Skill'**
+  String get addSkill;
+
+  /// No description provided for @addLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Language'**
+  String get addLanguage;
+
+  /// No description provided for @languageField.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get languageField;
+
+  /// No description provided for @levelField.
+  ///
+  /// In en, this message translates to:
+  /// **'Level'**
+  String get levelField;
+
+  /// No description provided for @addProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Project'**
+  String get addProject;
+
+  /// No description provided for @addProjectLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Project / Link'**
+  String get addProjectLink;
+
+  /// No description provided for @titleField.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get titleField;
+
+  /// No description provided for @linkField.
+  ///
+  /// In en, this message translates to:
+  /// **'Link'**
+  String get linkField;
+
+  /// No description provided for @chooseCVMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Your CV Builder'**
+  String get chooseCVMethod;
+
+  /// No description provided for @aiChatMode.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Chat Assistant'**
+  String get aiChatMode;
+
+  /// No description provided for @aiChatDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Let our AI guide you through building your CV with simple conversation'**
+  String get aiChatDescription;
+
+  /// No description provided for @manualMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual Form'**
+  String get manualMode;
+
+  /// No description provided for @manualDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Build your CV yourself with full control over every detail'**
+  String get manualDescription;
+
+  /// No description provided for @getStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get getStarted;
+
+  /// No description provided for @noSavedCVs.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved CVs yet'**
+  String get noSavedCVs;
+
+  /// No description provided for @searchPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Search your CVs...'**
+  String get searchPlaceholder;
+
+  /// No description provided for @view.
+  ///
+  /// In en, this message translates to:
+  /// **'VIEW'**
+  String get view;
+
+  /// No description provided for @pdf.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF'**
+  String get pdf;
+
+  /// No description provided for @unknownDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Date'**
+  String get unknownDate;
+
+  /// No description provided for @darkMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark Mode'**
+  String get darkMode;
+
+  /// No description provided for @premiumPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium Plan'**
+  String get premiumPlan;
+
+  /// No description provided for @active.
+  ///
+  /// In en, this message translates to:
+  /// **'ACTIVE'**
+  String get active;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @version.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get version;
+
+  /// No description provided for @linkedinLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'LinkedIn Profile'**
+  String get linkedinLabel;
+
+  /// No description provided for @githubLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Profile'**
+  String get githubLabel;
+
+  /// No description provided for @customSections.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Sections'**
+  String get customSections;
+
+  /// No description provided for @addCustomSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Custom Section'**
+  String get addCustomSection;
+
+  /// No description provided for @sectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Section Title'**
+  String get sectionTitle;
+
+  /// No description provided for @sectionContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Section Content'**
+  String get sectionContent;
+
+  /// No description provided for @reorderSections.
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder Sections'**
+  String get reorderSections;
+
+  /// No description provided for @projectRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Role (e.g., Team Lead)'**
+  String get projectRole;
+
+  /// No description provided for @projectDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Project Description'**
+  String get projectDescription;
+
+  /// No description provided for @noResultsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found!'**
+  String get noResultsFound;
+
+  /// No description provided for @editProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Project'**
+  String get editProject;
+
+  /// No description provided for @invalidName.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid name, please enter a real name.'**
+  String get invalidName;
+
+  /// No description provided for @invalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email address.'**
+  String get invalidEmail;
+
+  /// No description provided for @invalidPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid phone number.'**
+  String get invalidPhone;
+
+  /// No description provided for @invalidUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid link.'**
+  String get invalidUrl;
+
+  /// No description provided for @fieldRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Value cannot be empty.'**
+  String get fieldRequired;
 }
 
 class _AppLocalizationsDelegate

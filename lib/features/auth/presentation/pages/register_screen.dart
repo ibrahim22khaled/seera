@@ -70,7 +70,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           backgroundColor: Colors.green,
           textColor: Colors.white,
         );
-        if (mounted) Navigator.pushReplacementNamed(context, '/chat');
+        if (mounted) Navigator.pushReplacementNamed(context, '/verify-email');
       }
     } on FirebaseAuthException catch (e) {
       Fluttertoast.showToast(msg: AuthErrorHandler.getMessage(e, l10n));
@@ -110,10 +110,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 32),
                 Text(
                   l10n.joinSeera,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Theme.of(context).textTheme.headlineMedium?.color,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -368,8 +368,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyLarge?.color,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -377,7 +377,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         TextFormField(
           controller: controller,
           obscureText: obscureText,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
           autovalidateMode: AutovalidateMode.onUserInteraction,
           validator:
               validator ??
