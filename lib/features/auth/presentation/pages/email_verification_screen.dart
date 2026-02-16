@@ -34,6 +34,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   }
 
   Future<void> _checkVerificationStatus() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isChecking = true);
     try {
       final user = _auth.currentUser;
@@ -45,7 +46,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
           }
         } else {
           Fluttertoast.showToast(
-            msg: "Your email is still not verified. Please check your inbox.",
+            msg: l10n.emailNotVerifiedYet,
             backgroundColor: Colors.orange,
           );
         }
@@ -76,9 +77,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                 color: AppTheme.primaryBlue,
               ),
               const SizedBox(height: 32),
-              const Text(
-                'تأكيد البريد الإلكتروني',
-                style: TextStyle(
+              Text(
+                l10n.verifyEmail,
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -86,7 +87,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'لقد أرسلنا رابط تأكيد إلى:\n${user?.email ?? ""}\n\nيرجى اتباع الخطوات التالية:\n1) افتح بريدك الإلكتروني.\n2) اضغط على رابط التأكيد.\n3) عد إلى التطبيق واضغط على الزر أدناه.',
+                l10n.emailVerificationInstructions(user?.email ?? ""),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: AppTheme.textMuted,
@@ -108,9 +109,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                             borderRadius: BorderRadius.circular(16),
                           ),
                         ),
-                        child: const Text(
-                          'تم التأكيد / تحديث الحالة',
-                          style: TextStyle(
+                        child: Text(
+                          l10n.checkVerificationStatus,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -120,9 +121,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
               const SizedBox(height: 24),
               TextButton(
                 onPressed: _sendVerificationEmail,
-                child: const Text(
-                  'إعادة إرسال الرابط',
-                  style: TextStyle(color: AppTheme.primaryBlue),
+                child: Text(
+                  l10n.resendLink,
+                  style: const TextStyle(color: AppTheme.primaryBlue),
                 ),
               ),
               const SizedBox(height: 12),
@@ -132,9 +133,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   if (mounted)
                     Navigator.pushReplacementNamed(context, '/login');
                 },
-                child: const Text(
-                  'تسجيل الخروج',
-                  style: TextStyle(color: Colors.redAccent),
+                child: Text(
+                  l10n.signOut,
+                  style: const TextStyle(color: Colors.redAccent),
                 ),
               ),
             ],

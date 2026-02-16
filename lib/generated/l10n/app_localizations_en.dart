@@ -516,4 +516,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldRequired => 'Value cannot be empty.';
+
+  @override
+  String get passwordTooShort => 'Password must be at least 6 characters.';
+
+  @override
+  String get verifyEmailFirst => 'Please verify your email first.';
+
+  @override
+  String get emailVerificationSent => 'Verification link sent to your email.';
+
+  @override
+  String get invalidNameNoNumbers =>
+      'Please enter a valid name without numbers.';
+
+  @override
+  String get passwordWeak => 'Password is too weak.';
+
+  @override
+  String get verifyEmail => 'Verify Email';
+
+  @override
+  String emailVerificationInstructions(String email) {
+    return 'We\'ve sent a verification link to:\n$email\n\nPlease follow these steps:\n1) Open your email.\n2) Click on the verification link.\n3) Come back to the app and click the button below.';
+  }
+
+  @override
+  String get checkVerificationStatus => 'Check Status / Refresh';
+
+  @override
+  String get resendLink => 'Resend Link';
+
+  @override
+  String get emailNotVerifiedYet =>
+      'Your email is still not verified. Please check your inbox.';
+
+  @override
+  String get emailVerifiedSuccess => 'Email verified successfully!';
 }

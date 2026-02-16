@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       final user = FirebaseAuth.instance.currentUser;
       if (user != null && !user.emailVerified) {
-        Fluttertoast.showToast(msg: "يرجى تأكيد بريدك الإلكتروني أولاً.");
+        Fluttertoast.showToast(msg: l10n.verifyEmailFirst);
         if (mounted) Navigator.pushReplacementNamed(context, '/verify-email');
         return;
       }
@@ -165,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   validator: (val) {
                     if (val == null || val.isEmpty) return l10n.required;
                     if (!Validator.isValidEmail(val)) {
-                      return 'البريد الإلكتروني غير صحيح.';
+                      return l10n.invalidEmail;
                     }
                     return null;
                   },
@@ -181,7 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       setState(() => _obscurePassword = !_obscurePassword),
                   validator: (val) {
                     if (val == null || val.isEmpty) return l10n.required;
-                    if (val.length < 6) return 'كلمة المرور قصيرة جداً.';
+                    if (val.length < 6) return l10n.passwordTooShort;
                     return null;
                   },
                 ),

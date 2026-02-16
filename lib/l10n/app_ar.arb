@@ -149,11 +149,33 @@
   "addCustomSection": "إضافة قسم خاص",
   "sectionTitle": "عنوان القسم",
   "sectionContent": "محتوى القسم",
+  "reorderSections": "إعادة ترتيب الأقسام",
+  "projectRole": "الدور (مثلاً: قائد الفريق)",
+  "projectDescription": "وصف المشروع",
+  "editProject": "تعديل المشروع",
   "noResultsFound": "لا يوجد نتائج",
   "invalidName": "الاسم غير صحيح، يرجى كتابة اسم حقيقي.",
   "invalidEmail": "البريد الإلكتروني غير صحيح.",
   "invalidPhone": "رقم الهاتف غير صحيح.",
   "invalidUrl": "الرابط غير صحيح.",
-  "fieldRequired": "القيمة لا يمكن أن تكون فارغة."
+  "fieldRequired": "القيمة لا يمكن أن تكون فارغة.",
+  "passwordTooShort": "كلمة المرور يجب أن تكون ٦ أحرف على الأقل.",
+  "verifyEmailFirst": "يرجى تأكيد بريدك الإلكتروني أولاً.",
+  "emailVerificationSent": "تم إرسال رابط تأكيد للبريد الإلكتروني.",
+  "invalidNameNoNumbers": "يرجى كتابة اسم حقيقي بدون أرقام.",
+  "passwordWeak": "كلمة المرور ضعيفة جداً.",
+  "verifyEmail": "تأكيد البريد الإلكتروني",
+  "emailVerificationInstructions": "لقد أرسلنا رابط تأكيد إلى:\n{email}\n\nيرجى اتباع الخطوات التالية:\n1) افتح بريدك الإلكتروني.\n2) اضغط على رابط التأكيد.\n3) عد إلى التطبيق واضغط على الزر أدناه.",
+  "@emailVerificationInstructions": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "checkVerificationStatus": "تم التأكيد / تحديث الحالة",
+  "resendLink": "إعادة إرسال الرابط",
+  "emailNotVerifiedYet": "بريدك الإلكتروني لم يتم تأكيده بعد. يرجى التحقق من صندوق الوارد.",
+  "emailVerifiedSuccess": "تم تأكيد البريد الإلكتروني بنجاح!"
 }
 

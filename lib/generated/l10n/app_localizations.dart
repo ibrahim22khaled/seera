@@ -1057,6 +1057,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Value cannot be empty.'**
   String get fieldRequired;
+
+  /// No description provided for @passwordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 6 characters.'**
+  String get passwordTooShort;
+
+  /// No description provided for @verifyEmailFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Please verify your email first.'**
+  String get verifyEmailFirst;
+
+  /// No description provided for @emailVerificationSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification link sent to your email.'**
+  String get emailVerificationSent;
+
+  /// No description provided for @invalidNameNoNumbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid name without numbers.'**
+  String get invalidNameNoNumbers;
+
+  /// No description provided for @passwordWeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Password is too weak.'**
+  String get passwordWeak;
+
+  /// No description provided for @verifyEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Email'**
+  String get verifyEmail;
+
+  /// No description provided for @emailVerificationInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ve sent a verification link to:\n{email}\n\nPlease follow these steps:\n1) Open your email.\n2) Click on the verification link.\n3) Come back to the app and click the button below.'**
+  String emailVerificationInstructions(String email);
+
+  /// No description provided for @checkVerificationStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Check Status / Refresh'**
+  String get checkVerificationStatus;
+
+  /// No description provided for @resendLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend Link'**
+  String get resendLink;
+
+  /// No description provided for @emailNotVerifiedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Your email is still not verified. Please check your inbox.'**
+  String get emailNotVerifiedYet;
+
+  /// No description provided for @emailVerifiedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verified successfully!'**
+  String get emailVerifiedSuccess;
 }
 
 class _AppLocalizationsDelegate

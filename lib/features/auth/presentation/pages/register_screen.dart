@@ -56,7 +56,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
         // Send email verification
         await credential.user!.sendEmailVerification();
-        Fluttertoast.showToast(msg: 'تم إرسال رابط تأكيد للبريد الإلكتروني.');
+        Fluttertoast.showToast(msg: l10n.emailVerificationSent);
 
         // // Save selected dialect/locale
         // final prefs = await SharedPreferences.getInstance();
@@ -132,7 +132,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   validator: (val) {
                     if (val == null || val.isEmpty) return l10n.required;
                     if (!Validator.isValidName(val)) {
-                      return 'يرجى كتابة اسم حقيقي بدون أرقام.';
+                      return l10n.invalidNameNoNumbers;
                     }
                     return null;
                   },
@@ -145,7 +145,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   validator: (val) {
                     if (val == null || val.isEmpty) return l10n.required;
                     if (!Validator.isValidEmail(val)) {
-                      return 'البريد الإلكتروني غير صحيح.';
+                      return l10n.invalidEmail;
                     }
                     return null;
                   },
@@ -161,7 +161,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       setState(() => _obscurePassword = !_obscurePassword),
                   validator: (val) {
                     if (val == null || val.isEmpty) return l10n.required;
-                    if (val.length < 6) return 'كلمة المرور ضعيفة جداً.';
+                    if (val.length < 6) return l10n.passwordWeak;
                     return null;
                   },
                 ),

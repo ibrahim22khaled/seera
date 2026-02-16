@@ -486,19 +486,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get sectionContent => 'محتوى القسم';
 
   @override
-  String get reorderSections => 'Reorder Sections';
+  String get reorderSections => 'إعادة ترتيب الأقسام';
 
   @override
-  String get projectRole => 'Role (e.g., Team Lead)';
+  String get projectRole => 'الدور (مثلاً: قائد الفريق)';
 
   @override
-  String get projectDescription => 'Project Description';
+  String get projectDescription => 'وصف المشروع';
 
   @override
   String get noResultsFound => 'لا يوجد نتائج';
 
   @override
-  String get editProject => 'Edit Project';
+  String get editProject => 'تعديل المشروع';
 
   @override
   String get invalidName => 'الاسم غير صحيح، يرجى كتابة اسم حقيقي.';
@@ -514,4 +514,40 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get fieldRequired => 'القيمة لا يمكن أن تكون فارغة.';
+
+  @override
+  String get passwordTooShort => 'كلمة المرور يجب أن تكون ٦ أحرف على الأقل.';
+
+  @override
+  String get verifyEmailFirst => 'يرجى تأكيد بريدك الإلكتروني أولاً.';
+
+  @override
+  String get emailVerificationSent => 'تم إرسال رابط تأكيد للبريد الإلكتروني.';
+
+  @override
+  String get invalidNameNoNumbers => 'يرجى كتابة اسم حقيقي بدون أرقام.';
+
+  @override
+  String get passwordWeak => 'كلمة المرور ضعيفة جداً.';
+
+  @override
+  String get verifyEmail => 'تأكيد البريد الإلكتروني';
+
+  @override
+  String emailVerificationInstructions(String email) {
+    return 'لقد أرسلنا رابط تأكيد إلى:\n$email\n\nيرجى اتباع الخطوات التالية:\n1) افتح بريدك الإلكتروني.\n2) اضغط على رابط التأكيد.\n3) عد إلى التطبيق واضغط على الزر أدناه.';
+  }
+
+  @override
+  String get checkVerificationStatus => 'تم التأكيد / تحديث الحالة';
+
+  @override
+  String get resendLink => 'إعادة إرسال الرابط';
+
+  @override
+  String get emailNotVerifiedYet =>
+      'بريدك الإلكتروني لم يتم تأكيده بعد. يرجى التحقق من صندوق الوارد.';
+
+  @override
+  String get emailVerifiedSuccess => 'تم تأكيد البريد الإلكتروني بنجاح!';
 }

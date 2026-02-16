@@ -158,6 +158,24 @@
   "invalidEmail": "Invalid email address.",
   "invalidPhone": "Invalid phone number.",
   "invalidUrl": "Invalid link.",
-  "fieldRequired": "Value cannot be empty."
+  "fieldRequired": "Value cannot be empty.",
+  "passwordTooShort": "Password must be at least 6 characters.",
+  "verifyEmailFirst": "Please verify your email first.",
+  "emailVerificationSent": "Verification link sent to your email.",
+  "invalidNameNoNumbers": "Please enter a valid name without numbers.",
+  "passwordWeak": "Password is too weak.",
+  "verifyEmail": "Verify Email",
+  "emailVerificationInstructions": "We've sent a verification link to:\n{email}\n\nPlease follow these steps:\n1) Open your email.\n2) Click on the verification link.\n3) Come back to the app and click the button below.",
+  "@emailVerificationInstructions": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "checkVerificationStatus": "Check Status / Refresh",
+  "resendLink": "Resend Link",
+  "emailNotVerifiedYet": "Your email is still not verified. Please check your inbox.",
+  "emailVerifiedSuccess": "Email verified successfully!"
 }
 
