@@ -19,11 +19,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:seera/generated/l10n/app_localizations.dart';
 import 'core/services/locale_cubit.dart';
 import 'core/theme/theme_cubit.dart';
-import 'core/config/api_keys.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
@@ -35,6 +36,12 @@ class MyApp extends StatelessWidget {
     // Choose the service based on configuration
     final ChatService aiService;
     final List<ChatService> availableServices = [];
+
+    final bool useMockMode = dotenv.env['USE_MOCK_MODE'] == 'true';
+    final String groqApiKey = dotenv.env['GROQ_API_KEY'] ?? '';
+    final String openRouterApiKey = dotenv.env['OPEN_ROUTER_API_KEY'] ?? '';
+    final String huggingFaceApiKey = dotenv.env['HUGGING_FACE_API_KEY'] ?? '';
+    final String geminiApiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
 
     if (useMockMode) {
       availableServices.add(MockGeminiService());
@@ -60,13 +67,11 @@ class MyApp extends StatelessWidget {
           ),
         );
       }
-      /* 
       if (geminiApiKey.isNotEmpty) {
-        availableServices.add(
-          GeminiService(apiKey: geminiApiKey, systemPrompt: _systemPrompt),
-        );
+        // availableServices.add(
+        //   GeminiService(apiKey: geminiApiKey, systemPrompt: _systemPrompt),
+        // );
       }
-      */
     }
 
     if (availableServices.isEmpty) {

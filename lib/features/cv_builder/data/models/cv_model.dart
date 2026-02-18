@@ -45,6 +45,25 @@ class CVModel {
     this.updatedAt,
   });
 
+  factory CVModel.initial() => CVModel(
+    fullName: '',
+    jobTitle: '',
+    email: '',
+    phone: '',
+    country: '',
+    city: '',
+    summary: '',
+    skills: [],
+    experience: [],
+    education: [],
+    languages: [],
+    projects: [],
+    additionalInfo: '',
+    linkedin: '',
+    github: '',
+    customSections: [],
+  );
+
   factory CVModel.fromJson(Map<String, dynamic> json) {
     var projs = <ProjectModel>[];
     if (json['projects'] != null) {

@@ -1123,6 +1123,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Email verified successfully!'**
   String get emailVerifiedSuccess;
+
+  /// No description provided for @aiLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'You have reached the AI limit. Please try again later.'**
+  String get aiLimitReached;
+
+  /// No description provided for @clearDataConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to clear all data? This cannot be undone.'**
+  String get clearDataConfirmation;
+
+  /// No description provided for @clearData.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All Data'**
+  String get clearData;
+
+  /// No description provided for @pleaseLoginToPrint.
+  ///
+  /// In en, this message translates to:
+  /// **'Please login first to print or download your CV.'**
+  String get pleaseLoginToPrint;
+
+  /// No description provided for @continueAsGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue as Guest'**
+  String get continueAsGuest;
 }
 
 class _AppLocalizationsDelegate

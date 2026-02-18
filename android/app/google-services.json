@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:84402331097:android:5037a6f2aa9c837d28cdc8",
         "android_client_info": {
-          "package_name": "com.example.seera"
+          "package_name": "com.ibrahim22khaled.seera"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "84402331097-ucvdt58q236co1cltoh9rd6226r5bno5.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.seera",
+            "package_name": "com.ibrahim22khaled.seera",
             "certificate_hash": "99fa40256f44d0e8944287ee05df963cb0f0570b"
           }
         },

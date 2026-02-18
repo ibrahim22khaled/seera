@@ -248,6 +248,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
+                TextButton(
+                  onPressed: () =>
+                      Navigator.pushReplacementNamed(context, '/chat'),
+                  child: Text(
+                    l10n.continueAsGuest,
+                    style: const TextStyle(
+                      color: AppTheme.textMuted,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 20),
               ],
             ),

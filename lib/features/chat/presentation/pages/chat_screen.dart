@@ -252,12 +252,34 @@ class ChatScreenContent extends StatelessWidget {
               ),
             );
           } else if (state is ChatError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.redAccent,
-              ),
-            );
+            final msg = state.message.toLowerCase();
+            if (msg.contains('limit') ||
+                msg.contains('429') ||
+                msg.contains('rate')) {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  backgroundColor: AppTheme.surfaceBg,
+                  title: Text(
+                    l10n.aiLimitReached,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(l10n.cancel),
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.redAccent,
+                ),
+              );
+            }
           }
         },
         child: BlocBuilder<ChatCubit, ChatState>(

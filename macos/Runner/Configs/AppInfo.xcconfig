@@ -8,7 +8,7 @@
 PRODUCT_NAME = seera
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.seera
+PRODUCT_BUNDLE_IDENTIFIER = com.ibrahim22khaled.seera
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.

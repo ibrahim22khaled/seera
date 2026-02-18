@@ -127,20 +127,20 @@ class _SavedCvsScreenState extends State<SavedCvsScreen> {
                       style: TextStyle(color: subTextColor, fontSize: 14),
                     ),
                     const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        // Clear stack and go to main, assuming it lands on selection or chat
-                        Navigator.popUntil(context, (route) => route.isFirst);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryBlue,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(loc.startNewChat),
-                    ),
+                    // ElevatedButton(
+                    //   onPressed: () {
+                    //     // Clear stack and go to main, assuming it lands on selection or chat
+                    //     Navigator.popUntil(context, (route) => route.isFirst);
+                    //   },
+                    //   style: ElevatedButton.styleFrom(
+                    //     backgroundColor: AppTheme.primaryBlue,
+                    //     foregroundColor: Colors.white,
+                    //     shape: RoundedRectangleBorder(
+                    //       borderRadius: BorderRadius.circular(12),
+                    //     ),
+                    //   ),
+                    //   child: Text(loc.startNewChat),
+                    // ),
                   ],
                 ),
               ),

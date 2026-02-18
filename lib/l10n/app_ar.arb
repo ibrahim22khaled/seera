@@ -99,7 +99,7 @@
   "educationSection": "التعليم",
   "skillsSection": "المهارات",
   "languagesSection": "اللغات",
-  "projectsSection": "المشاريع / Portfolio",
+  "projectsSection": "المشاريع",
   "additionalInfoSection": "معلومات إضافية",
   "additionalInfoPlaceholder": "أي معلومات أخرى",
   "addExperience": "إضافة خبرة",
@@ -176,6 +176,11 @@
   "checkVerificationStatus": "تم التأكيد / تحديث الحالة",
   "resendLink": "إعادة إرسال الرابط",
   "emailNotVerifiedYet": "بريدك الإلكتروني لم يتم تأكيده بعد. يرجى التحقق من صندوق الوارد.",
-  "emailVerifiedSuccess": "تم تأكيد البريد الإلكتروني بنجاح!"
+  "emailVerifiedSuccess": "تم تأكيد البريد الإلكتروني بنجاح!",
+  "aiLimitReached": "لقد وصلت إلى الحد الأقصى لاستخدام الذكاء الاصطناعي. يرجى المحاولة مرة أخرى لاحقاً.",
+  "clearDataConfirmation": "هل أنت متأكد من مسح جميع البيانات؟ لا يمكن التراجع عن هذا الإجراء.",
+  "clearData": "مسح جميع البيانات",
+  "pleaseLoginToPrint": "يرجى تسجيل الدخول أولاً لطباعة أو تحميل سيرتك الذاتية.",
+  "continueAsGuest": "الاستمرار كزائر"
 }
 

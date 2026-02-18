@@ -13,16 +13,8 @@ class CvHandler {
     : _pdfService = pdfService ?? PdfServiceImpl();
 
   bool canGenerate(List<String> messages) {
-    final history = messages.join('\n').toLowerCase();
-    final hasName = history.contains('اسم') || history.contains('name');
-    final hasEmail = history.contains('@');
-    final hasPhone = history.contains('01') || history.contains('+');
-    final hasJobTitle =
-        history.contains('مسمى') ||
-        history.contains('عنوان') ||
-        history.contains('job');
-
-    return hasName && hasEmail && hasPhone && hasJobTitle;
+    // Relaxed: Allow generation if there are any messages from the user
+    return messages.any((m) => m.startsWith('You:'));
   }
 
   Future<CVModel> generateCV(List<String> messages) async {

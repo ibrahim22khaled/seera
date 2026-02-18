@@ -553,4 +553,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emailVerifiedSuccess => 'Email verified successfully!';
+
+  @override
+  String get aiLimitReached =>
+      'You have reached the AI limit. Please try again later.';
+
+  @override
+  String get clearDataConfirmation =>
+      'Are you sure you want to clear all data? This cannot be undone.';
+
+  @override
+  String get clearData => 'Clear All Data';
+
+  @override
+  String get pleaseLoginToPrint =>
+      'Please login first to print or download your CV.';
+
+  @override
+  String get continueAsGuest => 'Continue as Guest';
 }

@@ -176,6 +176,11 @@
   "checkVerificationStatus": "Check Status / Refresh",
   "resendLink": "Resend Link",
   "emailNotVerifiedYet": "Your email is still not verified. Please check your inbox.",
-  "emailVerifiedSuccess": "Email verified successfully!"
+  "emailVerifiedSuccess": "Email verified successfully!",
+  "aiLimitReached": "You have reached the AI limit. Please try again later.",
+  "clearDataConfirmation": "Are you sure you want to clear all data? This cannot be undone.",
+  "clearData": "Clear All Data",
+  "pleaseLoginToPrint": "Please login first to print or download your CV.",
+  "continueAsGuest": "Continue as Guest"
 }
 

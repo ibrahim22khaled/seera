@@ -7,6 +7,7 @@ import 'package:seera/generated/l10n/app_localizations.dart';
 import 'package:seera/features/cv_builder/data/models/cv_model.dart';
 import 'package:seera/core/services/validator.dart';
 import 'package:seera/features/cv_builder/presentation/pages/review_cv_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ManualFormScreen extends StatefulWidget {
   const ManualFormScreen({super.key});
@@ -17,6 +18,8 @@ class ManualFormScreen extends StatefulWidget {
 
 class _ManualFormScreenState extends State<ManualFormScreen> {
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+  int _resetCounter = 0;
 
   // Order of sections
   List<String> _sectionOrder = [
@@ -52,6 +55,7 @@ class _ManualFormScreenState extends State<ManualFormScreen> {
           return Form(
             key: _formKey,
             child: SingleChildScrollView(
+              key: ValueKey(_resetCounter),
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,34 +88,82 @@ class _ManualFormScreenState extends State<ManualFormScreen> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          context.read<CVBuilderCubit>().saveCurrentCV();
-                          // Navigate to Review CV Screen
-                          // Assuming we pass messages as empty or handle it inside ReviewCvScreen
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ReviewCvScreen(
-                                messages:
-                                    const [], // No chat messages in manual mode
-                                cvData: context
-                                    .read<CVBuilderCubit>()
-                                    .state
-                                    .currentCv,
+                      onPressed: _isLoading
+                          ? null
+                          : () async {
+                              if (_formKey.currentState!.validate()) {
+                                setState(() {
+                                  _isLoading = true;
+                                });
+                                try {
+                                  await context
+                                      .read<CVBuilderCubit>()
+                                      .saveCurrentCV();
+                                  if (mounted) {
+                                    // Check Authentication
+                                    final user =
+                                        FirebaseAuth.instance.currentUser;
+                                    if (user == null) {
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              loc.pleaseLoginToPrint,
+                                            ),
+                                            backgroundColor: Colors.redAccent,
+                                            behavior: SnackBarBehavior.floating,
+                                            duration: const Duration(
+                                              seconds: 3,
+                                            ),
+                                          ),
+                                        );
+                                        Navigator.pushNamed(context, '/login');
+                                      }
+                                      return;
+                                    }
+
+                                    // Navigate to Review CV Screen
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ReviewCvScreen(
+                                          messages: const [],
+                                          cvData: context
+                                              .read<CVBuilderCubit>()
+                                              .state
+                                              .currentCv,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                } finally {
+                                  if (mounted) {
+                                    setState(() {
+                                      _isLoading = false;
+                                    });
+                                  }
+                                }
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(loc.pleaseFillAllFields),
+                                    backgroundColor: Colors.redAccent,
+                                  ),
+                                );
+                              }
+                            },
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
                               ),
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(loc.pleaseFillAllFields),
-                              backgroundColor: Colors.redAccent,
-                            ),
-                          );
-                        }
-                      },
-                      child: Text(loc.previewPdf),
+                            )
+                          : Text(loc.previewPdf),
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -120,6 +172,45 @@ class _ManualFormScreenState extends State<ManualFormScreen> {
             ),
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showClearDataDialog,
+        backgroundColor: Colors.redAccent,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
+    );
+  }
+
+  void _showClearDataDialog() {
+    final loc = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surfaceBg,
+        title: Text(loc.clearData, style: const TextStyle(color: Colors.white)),
+        content: Text(
+          loc.clearDataConfirmation,
+          style: const TextStyle(color: AppTheme.textMuted),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(loc.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              context.read<CVBuilderCubit>().resetCV();
+              setState(() {
+                _resetCounter++;
+              });
+              Navigator.pop(context);
+            },
+            child: Text(
+              loc.delete,
+              style: const TextStyle(color: Colors.redAccent),
+            ),
+          ),
+        ],
       ),
     );
   }

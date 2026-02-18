@@ -4,10 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/cv_model.dart';
 
 import 'package:seera/features/cv_builder/presentation/cubit/cv_builder_cubit.dart';
+import 'package:seera/features/cv_builder/presentation/cubit/cv_builder_state.dart';
 import 'package:seera/generated/l10n/app_localizations.dart';
 import 'package:seera/features/cv_builder/domain/services/pdf_service.dart';
 import 'package:printing/printing.dart';
 import 'package:seera/core/theme/app_theme.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ReviewCvScreen extends StatefulWidget {
   final List<String> messages;
@@ -24,6 +26,7 @@ class ReviewCvScreen extends StatefulWidget {
 }
 
 class _ReviewCvScreenState extends State<ReviewCvScreen> {
+  bool _isLoading = false;
   late TextEditingController _nameController;
   late TextEditingController _jobTitleController;
   late TextEditingController _emailController;
@@ -63,7 +66,8 @@ class _ReviewCvScreenState extends State<ReviewCvScreen> {
   }
 
   void _saveChanges() {
-    final updatedCv = widget.cvData.copyWith(
+    final cubit = context.read<CVBuilderCubit>();
+    final updatedCv = cubit.state.currentCv.copyWith(
       fullName: _nameController.text,
       jobTitle: _jobTitleController.text,
       email: _emailController.text,
@@ -75,10 +79,30 @@ class _ReviewCvScreenState extends State<ReviewCvScreen> {
       summary: _summaryController.text,
     );
 
-    context.read<CVBuilderCubit>().updateCV(updatedCv);
+    cubit.updateCV(updatedCv);
   }
 
   Future<void> _previewPdf() async {
+    if (_isLoading) return;
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.pleaseLoginToPrint),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      Navigator.pushNamed(context, '/login');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
     _saveChanges();
     try {
       final pdfService = PdfServiceImpl();
@@ -96,130 +120,127 @@ class _ReviewCvScreenState extends State<ReviewCvScreen> {
           context,
         ).showSnackBar(SnackBar(content: Text('Error generating PDF: $e')));
       }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    // Using dark theme colors directly or via AppTheme
-    return Scaffold(
-      backgroundColor: AppTheme.darkTheme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: Text(loc.reviewData),
-        backgroundColor: AppTheme.darkTheme.appBarTheme.backgroundColor,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _buildSectionCard(loc.basicInfo, [
-              _buildTextField(loc.fullNameLabel, _nameController),
-              _buildTextField(loc.jobTitleLabel, _jobTitleController),
-              _buildTextField(loc.emailLabel, _emailController),
-              _buildTextField(loc.phoneLabel, _phoneController),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildTextField(loc.cityLabel, _cityController),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildTextField(
-                      loc.countryLabel,
-                      _countryController,
-                    ),
-                  ),
-                ],
-              ),
-              _buildTextField(loc.linkedinLabel, _linkedinController),
-              _buildTextField(loc.githubLabel, _githubController),
-            ]),
-            const SizedBox(height: 16),
-            _buildSectionCard(loc.summaryLabel, [
-              _buildTextField(
-                loc.summaryLabel,
-                _summaryController,
-                maxLines: 5,
-              ),
-            ]),
-            const SizedBox(height: 16),
 
-            // Custom Sections Display
-            if (widget.cvData.customSections.isNotEmpty)
-              _buildSectionCard(loc.customSections, [
-                ...widget.cvData.customSections.map(
-                  (s) => ListTile(
-                    title: Text(
-                      s.title,
-                      style: const TextStyle(color: Colors.white),
+    return BlocBuilder<CVBuilderCubit, CVBuilderState>(
+      builder: (context, state) {
+        final currentCv = state.currentCv;
+
+        return Scaffold(
+          backgroundColor: AppTheme.darkTheme.scaffoldBackgroundColor,
+          appBar: AppBar(
+            title: Text(loc.reviewData),
+            backgroundColor: AppTheme.darkTheme.appBarTheme.backgroundColor,
+            elevation: 0,
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                _buildSectionCard(loc.basicInfo, [
+                  _buildTextField(loc.fullNameLabel, _nameController),
+                  _buildTextField(loc.jobTitleLabel, _jobTitleController),
+                  _buildTextField(loc.emailLabel, _emailController),
+                  _buildTextField(loc.phoneLabel, _phoneController),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildTextField(loc.cityLabel, _cityController),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildTextField(
+                          loc.countryLabel,
+                          _countryController,
+                        ),
+                      ),
+                    ],
+                  ),
+                  _buildTextField(loc.linkedinLabel, _linkedinController),
+                  _buildTextField(loc.githubLabel, _githubController),
+                ]),
+                const SizedBox(height: 16),
+                _buildSectionCard(loc.summaryLabel, [
+                  _buildTextField(
+                    loc.summaryLabel,
+                    _summaryController,
+                    maxLines: 5,
+                  ),
+                ]),
+                const SizedBox(height: 16),
+
+                // Custom Sections
+                _buildCustomSections(currentCv, loc),
+                const SizedBox(height: 16),
+
+                // Experience
+                _buildExperienceSection(currentCv, loc),
+                const SizedBox(height: 16),
+
+                // Education
+                _buildEducationSection(currentCv, loc),
+                const SizedBox(height: 16),
+
+                // Skills
+                _buildSkillsSection(currentCv, loc),
+                const SizedBox(height: 16),
+
+                // Languages
+                _buildLanguagesSection(currentCv, loc),
+                const SizedBox(height: 16),
+
+                // Projects
+                _buildProjectsSection(currentCv, loc),
+                const SizedBox(height: 16),
+
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryBlue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    subtitle: Text(
-                      s.content,
-                      style: const TextStyle(color: Colors.white70),
-                    ),
+                    onPressed: _isLoading ? null : _previewPdf,
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            loc.previewPdf,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
-              ]),
-            const SizedBox(height: 16),
-
-            // Experience
-            if (widget.cvData.experience.isNotEmpty) ...[
-              _buildExperienceSection(widget.cvData, loc),
-              const SizedBox(height: 16),
-            ],
-
-            // Education
-            if (widget.cvData.education.isNotEmpty) ...[
-              _buildEducationSection(widget.cvData, loc),
-              const SizedBox(height: 16),
-            ],
-
-            // Skills
-            if (widget.cvData.skills.isNotEmpty) ...[
-              _buildSkillsSection(widget.cvData, loc),
-              const SizedBox(height: 16),
-            ],
-
-            // Languages
-            if (widget.cvData.languages.isNotEmpty) ...[
-              _buildLanguagesSection(widget.cvData, loc),
-              const SizedBox(height: 16),
-            ],
-
-            // Projects
-            if (widget.cvData.projects.isNotEmpty) ...[
-              _buildProjectsSection(widget.cvData, loc),
-              const SizedBox(height: 16),
-            ],
-
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryBlue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: _previewPdf,
-                child: Text(
-                  loc.previewPdf,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+                const SizedBox(height: 20),
+              ],
             ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -794,6 +815,124 @@ class _ReviewCvScreenState extends State<ReviewCvScreen> {
                 }
 
                 cubit.updateField(projects: currentList);
+              }
+              Navigator.pop(dialogContext);
+            },
+            child: Text(isEditing ? loc.save : loc.add),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- Custom Sections ---
+  Widget _buildCustomSections(CVModel cv, AppLocalizations loc) {
+    return _buildSectionCard(loc.customSections, [
+      _buildCustomSectionsList(context, cv.customSections, loc),
+    ]);
+  }
+
+  Widget _buildCustomSectionsList(
+    BuildContext context,
+    List<CustomSectionModel> sections,
+    AppLocalizations loc,
+  ) {
+    return Column(
+      children: [
+        ...sections.map((sec) {
+          return Card(
+            color: AppTheme.darkBg,
+            child: ListTile(
+              title: Text(
+                sec.title,
+                style: const TextStyle(color: Colors.white),
+              ),
+              subtitle: Text(
+                sec.content,
+                style: const TextStyle(color: AppTheme.textMuted),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.redAccent),
+                onPressed: () {
+                  final newList = List<CustomSectionModel>.from(sections)
+                    ..remove(sec);
+                  context.read<CVBuilderCubit>().updateField(
+                    customSections: newList,
+                  );
+                },
+              ),
+              onTap: () => _showCustomSectionDialog(context, sec),
+            ),
+          );
+        }),
+        TextButton.icon(
+          onPressed: () => _showCustomSectionDialog(context, null),
+          icon: const Icon(Icons.add),
+          label: Text(loc.addCustomSection),
+        ),
+      ],
+    );
+  }
+
+  void _showCustomSectionDialog(
+    BuildContext context,
+    CustomSectionModel? existing,
+  ) {
+    final isEditing = existing != null;
+    final titleController = TextEditingController(text: existing?.title ?? '');
+    final contentController = TextEditingController(
+      text: existing?.content ?? '',
+    );
+    final loc = AppLocalizations.of(context)!;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppTheme.darkBg,
+        title: Text(
+          isEditing ? loc.edit : loc.addCustomSection,
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildTextField(loc.sectionTitle, titleController),
+              _buildTextField(
+                loc.sectionContent,
+                contentController,
+                maxLines: 5,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(loc.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              if (titleController.text.isNotEmpty) {
+                final newSec = CustomSectionModel(
+                  title: titleController.text,
+                  content: contentController.text,
+                );
+                final cubit = context.read<CVBuilderCubit>();
+                final currentList = List<CustomSectionModel>.from(
+                  cubit.state.currentCv.customSections,
+                );
+
+                if (isEditing) {
+                  final index = currentList.indexOf(existing);
+                  if (index != -1) currentList[index] = newSec;
+                } else {
+                  currentList.add(newSec);
+                }
+
+                cubit.updateField(customSections: currentList);
               }
               Navigator.pop(dialogContext);
             },

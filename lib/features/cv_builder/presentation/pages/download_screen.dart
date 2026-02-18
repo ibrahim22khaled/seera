@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:seera/core/theme/app_theme.dart';
-// import 'package:seera/generated/l10n/app_localizations.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:seera/generated/l10n/app_localizations.dart';
 
 class DownloadScreen extends StatelessWidget {
   const DownloadScreen({super.key});
@@ -38,6 +39,7 @@ class DownloadScreen extends StatelessWidget {
             ),
             const SizedBox(height: 40),
             _buildOptionCard(
+              context: context,
               title: 'Free Download',
               features: ['Seera watermark included', 'Standard PDF format'],
               buttonLabel: 'Download ...',
@@ -45,6 +47,7 @@ class DownloadScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             _buildOptionCard(
+              context: context,
               title: 'Premium Download',
               features: [
                 'Official & ATS Optimized',
@@ -88,6 +91,7 @@ class DownloadScreen extends StatelessWidget {
   }
 
   Widget _buildOptionCard({
+    required BuildContext context,
     required String title,
     required List<String> features,
     required String buttonLabel,
@@ -206,7 +210,23 @@ class DownloadScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user == null) {
+                      final l10n = AppLocalizations.of(context)!;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(l10n.pleaseLoginToPrint),
+                          backgroundColor: Colors.redAccent,
+                          behavior: SnackBarBehavior.floating,
+                          duration: const Duration(seconds: 3),
+                        ),
+                      );
+                      Navigator.pushNamed(context, '/login');
+                      return;
+                    }
+                    // Handle download logic here
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isRecommended
                         ? AppTheme.primaryBlue

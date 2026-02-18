@@ -334,7 +334,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get languagesSection => 'اللغات';
 
   @override
-  String get projectsSection => 'المشاريع / Portfolio';
+  String get projectsSection => 'المشاريع';
 
   @override
   String get additionalInfoSection => 'معلومات إضافية';
@@ -550,4 +550,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get emailVerifiedSuccess => 'تم تأكيد البريد الإلكتروني بنجاح!';
+
+  @override
+  String get aiLimitReached =>
+      'لقد وصلت إلى الحد الأقصى لاستخدام الذكاء الاصطناعي. يرجى المحاولة مرة أخرى لاحقاً.';
+
+  @override
+  String get clearDataConfirmation =>
+      'هل أنت متأكد من مسح جميع البيانات؟ لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String get clearData => 'مسح جميع البيانات';
+
+  @override
+  String get pleaseLoginToPrint =>
+      'يرجى تسجيل الدخول أولاً لطباعة أو تحميل سيرتك الذاتية.';
+
+  @override
+  String get continueAsGuest => 'الاستمرار كزائر';
 }

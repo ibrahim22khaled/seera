@@ -64,7 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '84402331097',
     projectId: 'seera-b44e4',
     storageBucket: 'seera-b44e4.firebasestorage.app',
-    iosBundleId: 'com.example.seera',
+    iosBundleId: 'com.ibrahim22khaled.seera',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -73,7 +73,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '84402331097',
     projectId: 'seera-b44e4',
     storageBucket: 'seera-b44e4.firebasestorage.app',
-    iosBundleId: 'com.example.seera',
+    iosBundleId: 'com.ibrahim22khaled.seera',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

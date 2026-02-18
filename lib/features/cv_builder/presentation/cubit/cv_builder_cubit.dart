@@ -7,6 +7,7 @@ import 'cv_builder_state.dart';
 class CVBuilderCubit extends Cubit<CVBuilderState> {
   CVBuilderCubit() : super(CVBuilderState.initial()) {
     loadSavedCVs();
+    _loadDraftCV();
   }
 
   void setMode(BuilderMode mode) {
@@ -15,6 +16,7 @@ class CVBuilderCubit extends Cubit<CVBuilderState> {
 
   void updateCV(CVModel cv) {
     emit(state.copyWith(currentCv: cv));
+    _saveDraftCV();
   }
 
   void updateField({
@@ -59,6 +61,7 @@ class CVBuilderCubit extends Cubit<CVBuilderState> {
         ),
       ),
     );
+    _saveDraftCV();
   }
 
   void reorderExperience(int oldIndex, int newIndex) {
@@ -67,6 +70,29 @@ class CVBuilderCubit extends Cubit<CVBuilderState> {
     final item = items.removeAt(oldIndex);
     items.insert(newIndex, item);
     updateCV(state.currentCv.copyWith(experience: items));
+  }
+
+  Future<void> _loadDraftCV() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String? draftJson = prefs.getString('draft_cv');
+      if (draftJson != null) {
+        emit(
+          state.copyWith(currentCv: CVModel.fromJson(jsonDecode(draftJson))),
+        );
+      }
+    } catch (e) {
+      print('Error loading draft CV: $e');
+    }
+  }
+
+  Future<void> _saveDraftCV() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('draft_cv', jsonEncode(state.currentCv.toJson()));
+    } catch (e) {
+      print('Error saving draft CV: $e');
+    }
   }
 
   Future<void> loadSavedCVs() async {
@@ -124,6 +150,7 @@ class CVBuilderCubit extends Cubit<CVBuilderState> {
 
     await prefs.setStringList('saved_cvs', cvsJson);
     emit(state.copyWith(savedCVs: currentSaved, currentCv: cvToSave));
+    _saveDraftCV();
   }
 
   Future<void> deleteCV(String id) async {
@@ -137,5 +164,11 @@ class CVBuilderCubit extends Cubit<CVBuilderState> {
 
     await prefs.setStringList('saved_cvs', cvsJson);
     emit(state.copyWith(savedCVs: currentSaved));
+  }
+
+  void resetCV() async {
+    emit(state.copyWith(currentCv: CVModel.initial()));
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('draft_cv');
   }
 }
