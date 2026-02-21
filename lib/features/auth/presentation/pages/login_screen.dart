@@ -69,24 +69,52 @@ class _LoginScreenState extends State<LoginScreen> {
     final l10n = AppLocalizations.of(context)!;
     setState(() => _isLoading = true);
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      final GoogleSignInAuthentication? googleAuth =
-          await googleUser?.authentication;
-      if (googleAuth != null) {
-        final credential = GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
-          idToken: googleAuth.idToken,
-        );
-        await FirebaseAuth.instance.signInWithCredential(credential);
-        Fluttertoast.showToast(
-          msg: l10n.loginSuccessful,
-          backgroundColor: Colors.green,
-        );
-        if (mounted) Navigator.pushReplacementNamed(context, '/chat');
+      debugPrint('Starting Google Sign-In...');
+      // Explicitly providing the serverClientId (Web Client ID from google-services.json)
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        serverClientId:
+            '84402331097-k4ck14nu24kpm8t1fbut52e850cpold6.apps.googleusercontent.com',
+      );
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        debugPrint('Google Sign-In canceled by user.');
+        return;
       }
+
+      debugPrint('Google User signed in: ${googleUser.email}');
+      final GoogleSignInAuthentication? googleAuth =
+          await googleUser.authentication;
+
+      if (googleAuth == null) {
+        debugPrint('Failed to get Google Authentication.');
+        Fluttertoast.showToast(msg: 'Failed to get Google Authentication');
+        return;
+      }
+
+      debugPrint(
+        'Obtained Google Auth credentials. ID Token: ${googleAuth.idToken != null}',
+      );
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      debugPrint('Firebase Sign-In with Google successful.');
+
+      Fluttertoast.showToast(
+        msg: l10n.loginSuccessful,
+        backgroundColor: Colors.green,
+      );
+      if (mounted) Navigator.pushReplacementNamed(context, '/chat');
     } on FirebaseAuthException catch (e) {
+      debugPrint(
+        'FirebaseAuthException during Google Sign-In: ${e.code} - ${e.message}',
+      );
       Fluttertoast.showToast(msg: AuthErrorHandler.getMessage(e, l10n));
     } catch (e) {
+      debugPrint('General Exception during Google Sign-In: $e');
       Fluttertoast.showToast(msg: l10n.googleSignInFailed(e.toString()));
     } finally {
       if (mounted) setState(() => _isLoading = false);

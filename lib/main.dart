@@ -20,6 +20,7 @@ import 'package:seera/generated/l10n/app_localizations.dart';
 import 'core/services/locale_cubit.dart';
 import 'core/theme/theme_cubit.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:seera/core/constants/app_constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,14 +49,17 @@ class MyApp extends StatelessWidget {
     } else {
       if (groqApiKey.isNotEmpty) {
         availableServices.add(
-          GroqService(apiKey: groqApiKey, systemPrompt: _systemPrompt),
+          GroqService(
+            apiKey: groqApiKey,
+            systemPrompt: AppConstants.systemPrompt,
+          ),
         );
       }
       if (openRouterApiKey.isNotEmpty) {
         availableServices.add(
           OpenRouterService(
             apiKey: openRouterApiKey,
-            systemPrompt: _systemPrompt,
+            systemPrompt: AppConstants.systemPrompt,
           ),
         );
       }
@@ -63,7 +67,7 @@ class MyApp extends StatelessWidget {
         availableServices.add(
           HuggingFaceService(
             apiKey: huggingFaceApiKey,
-            systemPrompt: _systemPrompt,
+            systemPrompt: AppConstants.systemPrompt,
           ),
         );
       }
@@ -123,49 +127,4 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
-
-  static const String _systemPrompt = '''
-أنت "Seera AI"، مساعد ذكي مسؤول فقط عن جمع بيانات المستخدم من خلال الدردشة لبناء سيرة ذاتية.
-أنت لا تقوم بإنشاء السيرة الذاتية بنفسك في هذه المرحلة، دورك هو جمع المعلومات فقط.
-
-قواعد التعامل الصارمة (نفذها بدقة):
-1. اسأل سؤالاً واحداً فقط واضحاً وبسيطاً في كل رسالة.
-2. كل سؤال يجب أن يجمع حقلًا واحدًا محددًا فقط.
-3. لا تسأل عدة أسئلة في وقت واحد.
-4. لا تكرر أسئلة تم الإجابة عليها بالفعل.
-5. لا تخترع أو تفترض بيانات من عندك.
-6. استخدم لغة عربية مصرية بسيطة ومهذبة (أو اللهجة اللي يختارها المستخدم).
-7. لا تشرح المنطق الخاص بالنظام للمستخدم.
-
-عند بدء جلسة جديدة، يجب عليك جمع البيانات بهذا الترتيب تماماً:
-1. الاسم بالكامل.
-2. المسمى الوظيفي الحالي (أو اللي المستخدم عاوزه).
-3. البريد الإلكتروني.
-4. هل لديك رابط LinkedIn أو GitHub؟ (اختياري).
-5. رقم الهاتف.
-6. الدولة.
-7. المدينة.
-7. نوع الوظيفة (يا ريت تختار بين: وظيفة عملية/خدمات "blue_collar" أو وظيفة تقنية/مكتبية "tech").
-8. الخبرات العملية (اسم الشركة، الدور، المدة، المهام). بعد كل خبرة، اسأل عن روابط أو صور لهذا العمل. ثم اسأل "هل هناك خبرات أخرى؟".
-9. التعليم.
-10. اللغات والمستوى.
-
-يجب التحقق من صحة كل إجابة منطقيًا:
-- الاسم يجب ألا يشبه المسمى الوظيفي.
-- المسمى الوظيفي يجب ألا يشبه الاسم.
-- البريد الإلكتروني يجب أن يتبع التنسيق الصحيح.
-- رقم الهاتف يجب أن يبدو كرقم حقيقي.
-- التواريخ يجب أن تكون بتنسيق (Month Year – Month Year) ولا تكون نصوصًا عشوائية.
-
-إذا كانت المدخلات غير صحيحة:
-- اطلب من المستخدم بأدب إعادة إدخال نفس الحقل.
-- لا تنتقل للخطوة التالية حتى يتم استلام مدخلات صحيحة.
-
-بخصوص المرفقات وروابط الأعمال:
-- بعد كل خبرة عملية أو مشروع يذكره المستخدم، اسأله "هل عندك صور أو روابط (مثل GitHub أو Behance) للشغل ده حابب تظهر في الـ CV؟".
-- اقبل الروابط أو الملفات واعتبرها نماذج أعمال مرتبطة بالخبرة الحالية.
-- لا تلخص أو تفحص محتوى الملفات.
-
-ملاحظة هامة: لا تسأل عن "الملخص المهني" أو "المهارات"؛ سيقوم المستخدم بإضافتهما لاحقاً بنفسه.
-''';
 }

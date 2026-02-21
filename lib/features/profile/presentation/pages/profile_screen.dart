@@ -69,52 +69,7 @@ class ProfileScreen extends StatelessWidget {
                     ]);
                   },
                 ),
-                const SizedBox(height: 200),
-                // _buildSectionHeader(loc.basicInfo.toUpperCase(), textColor),
-                // _buildSettingsContainer(context, isDark, [
-                //   _buildSettingTile(
-                //     context: context,
-                //     icon: Icons.star_outline,
-                //     iconColor: Colors.amber,
-                //     title: loc.premiumPlan,
-                //     trailing: Container(
-                //       padding: const EdgeInsets.symmetric(
-                //         horizontal: 8,
-                //         vertical: 4,
-                //       ),
-                //       decoration: BoxDecoration(
-                //         color: Colors.amber.withOpacity(0.1),
-                //         borderRadius: BorderRadius.circular(4),
-                //       ),
-                //       child: Text(
-                //         loc.active,
-                //         style: const TextStyle(
-                //           color: Colors.amber,
-                //           fontSize: 10,
-                //           fontWeight: FontWeight.bold,
-                //         ),
-                //       ),
-                //     ),
-                //     textColor: textColor,
-                //     subTextColor: subTextColor,
-                //   ),
-                //   Divider(
-                //     color: isDark
-                //         ? const Color(0xFF1E293B)
-                //         : const Color(0xFFE2E8F0),
-                //     height: 1,
-                //   ),
-                //   _buildSettingTile(
-                //     context: context,
-                //     icon: Icons.notifications_none,
-                //     iconColor: Colors.blue,
-                //     title: loc.notifications,
-                //     onTap: () {},
-                //     textColor: textColor,
-                //     subTextColor: subTextColor,
-                //   ),
-                // ]),
-                const SizedBox(height: 40),
+                const SizedBox(height: 250),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: user == null
@@ -172,7 +127,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  '${loc.version} 2.5.0 (Build 109)',
+                  '${loc.version} 1.0.0',
                   style: const TextStyle(
                     color: AppTheme.textMuted,
                     fontSize: 13,

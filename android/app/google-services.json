@@ -9,12 +9,64 @@
       "client_info": {
         "mobilesdk_app_id": "1:84402331097:android:5037a6f2aa9c837d28cdc8",
         "android_client_info": {
-          "package_name": "com.ibrahim22khaled.seera"
+          "package_name": "com.example.seera"
         }
       },
       "oauth_client": [
         {
           "client_id": "84402331097-ucvdt58q236co1cltoh9rd6226r5bno5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.seera",
+            "certificate_hash": "99fa40256f44d0e8944287ee05df963cb0f0570b"
+          }
+        },
+        {
+          "client_id": "84402331097-k4ck14nu24kpm8t1fbut52e850cpold6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCH4TF50-7VTZOCo_ayCgdwsv4heqYKFUA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "84402331097-k4ck14nu24kpm8t1fbut52e850cpold6.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "84402331097-vcgukm0m8d3qivo8dg57mqcrkqe5em5p.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.seera"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:84402331097:android:ce105cbe787a990728cdc8",
+        "android_client_info": {
+          "package_name": "com.ibrahim22khaled.seera"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "84402331097-buf9jpqdehr2s9sh5iiv73t04gf8q020.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ibrahim22khaled.seera",
+            "certificate_hash": "6665b905ee251a95c82901a09fdaaa27b52ad284"
+          }
+        },
+        {
+          "client_id": "84402331097-lil9e0nvaiu9hisl9mmcdngvbgis2qcb.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.ibrahim22khaled.seera",

@@ -47,3 +47,11 @@ app.*.map.json
 # Secrets
 .env
 lib/core/config/api_keys.dart
+android/key.properties
+android/local.properties
+signing_info.txt
+signing_report.txt
+analysis.txt
+*.jks
+*.keystore
+*.jks.jks
