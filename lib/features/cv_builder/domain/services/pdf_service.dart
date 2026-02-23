@@ -523,9 +523,11 @@ class PdfServiceImpl implements PdfService {
     pw.Font bold,
     bool appRtl,
   ) {
-    final linkWidget = proj.url.isNotEmpty
-        ? pw.UrlLink(
-            destination: proj.url,
+    final linkWidgets = proj.urls
+        .where((url) => url.isNotEmpty)
+        .map(
+          (url) => pw.UrlLink(
+            destination: url,
             child: pw.Text(
               'Link',
               style: pw.TextStyle(
@@ -535,8 +537,9 @@ class PdfServiceImpl implements PdfService {
                 decoration: pw.TextDecoration.underline,
               ),
             ),
-          )
-        : null;
+          ),
+        )
+        .toList();
 
     return pw.Padding(
       padding: const pw.EdgeInsets.only(bottom: 10),
@@ -545,34 +548,25 @@ class PdfServiceImpl implements PdfService {
             ? pw.CrossAxisAlignment.end
             : pw.CrossAxisAlignment.start,
         children: [
-          // Title + Link — link stays on the "outer" side
-          pw.Row(
-            crossAxisAlignment: pw.CrossAxisAlignment.center,
-            children: appRtl
-                ? [
-                    if (linkWidget != null) ...[
-                      linkWidget,
-                      pw.SizedBox(width: 8),
-                    ],
-                    pw.Expanded(
-                      child: _t(proj.title, _boldStyle(bold), appRtl),
-                    ),
-                  ]
-                : [
-                    _t(proj.title, _boldStyle(bold), appRtl),
-                    if (linkWidget != null) ...[
-                      pw.SizedBox(width: 8),
-                      linkWidget,
-                    ],
-                  ],
-          ),
+          // Title
+          _t(proj.title, _boldStyle(bold), appRtl),
+
+          // Description
+          if (proj.description.isNotEmpty) ...[
+            _gap(3),
+            _t(proj.description, _bodyStyle(regular), appRtl),
+          ],
+
+          // Role
           if (proj.role.isNotEmpty) ...[
             _gap(2),
             _t(proj.role, _mutedStyle(regular, size: 9.5), appRtl),
           ],
-          if (proj.description.isNotEmpty) ...[
-            _gap(3),
-            _t(proj.description, _bodyStyle(regular), appRtl),
+
+          // Links
+          if (linkWidgets.isNotEmpty) ...[
+            _gap(4),
+            pw.Wrap(spacing: 8, runSpacing: 4, children: linkWidgets),
           ],
         ],
       ),

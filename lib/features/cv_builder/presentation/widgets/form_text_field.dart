@@ -4,9 +4,10 @@ import 'package:seera/core/theme/app_theme.dart';
 class FormTextField extends StatelessWidget {
   final String label;
   final String value;
-  final Function(String) onChanged;
+  final ValueChanged<String> onChanged;
   final int maxLines;
   final String? Function(String?)? validator;
+  final ValueChanged<String>? onFieldSubmitted;
 
   const FormTextField({
     super.key,
@@ -15,6 +16,7 @@ class FormTextField extends StatelessWidget {
     required this.onChanged,
     this.maxLines = 1,
     this.validator,
+    this.onFieldSubmitted,
   });
 
   @override
@@ -27,6 +29,7 @@ class FormTextField extends StatelessWidget {
         style: const TextStyle(color: Colors.white),
         onChanged: onChanged,
         validator: validator,
+        onFieldSubmitted: onFieldSubmitted,
         autovalidateMode: AutovalidateMode.onUserInteraction,
         decoration: InputDecoration(
           labelText: label,

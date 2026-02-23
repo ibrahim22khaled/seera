@@ -31,7 +31,7 @@ class ProjectsSection extends StatelessWidget {
               ),
               subtitle: Text(
                 proj.description,
-                maxLines: 2,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(color: AppTheme.textMuted),
               ),
@@ -65,7 +65,9 @@ class ProjectsSection extends StatelessWidget {
       text: existing?.description ?? '',
     );
     final roleController = TextEditingController(text: existing?.role ?? '');
-    final linkController = TextEditingController(text: existing?.url ?? '');
+    final linkController = TextEditingController(
+      text: existing?.urls.join(', ') ?? '',
+    );
 
     showDialog(
       context: context,
@@ -75,18 +77,30 @@ class ProjectsSection extends StatelessWidget {
           isEditing ? loc.edit : loc.addProject,
           style: const TextStyle(color: Colors.white),
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FormDialogField(controller: titleController, label: loc.titleField),
-            FormDialogField(
-              controller: descController,
-              label: loc.projectDescription,
-              maxLines: 3,
-            ),
-            FormDialogField(controller: roleController, label: loc.projectRole),
-            FormDialogField(controller: linkController, label: loc.linkField),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FormDialogField(
+                controller: titleController,
+                label: loc.titleField,
+              ),
+              FormDialogField(
+                controller: descController,
+                label: loc.projectDescription,
+                maxLines: 3,
+              ),
+              FormDialogField(
+                controller: roleController,
+                label: loc.projectRole,
+              ),
+              FormDialogField(
+                controller: linkController,
+                label: loc.linkField,
+                hintText: 'Link1, Link2, ...',
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -99,7 +113,11 @@ class ProjectsSection extends StatelessWidget {
                 title: titleController.text,
                 role: roleController.text,
                 description: descController.text,
-                url: linkController.text,
+                urls: linkController.text
+                    .split(',')
+                    .map((e) => e.trim())
+                    .where((e) => e.isNotEmpty)
+                    .toList(),
               );
 
               final cubit = context.read<CVBuilderCubit>();

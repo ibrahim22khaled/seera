@@ -139,10 +139,24 @@ class ChatScreenContent extends StatelessWidget {
             l10n.aiLimitReached,
             style: const TextStyle(color: Colors.white),
           ),
+          content: Text(
+            l10n.aiLimitReached, // Using same key for now as it contains the limit message usually, but let's be safe.
+            style: const TextStyle(color: AppTheme.textMuted),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close dialog
+                Navigator.pushNamed(
+                  context,
+                  '/manual-form',
+                ); // Navigate to manual
+              },
+              child: Text(l10n.manualMode),
             ),
           ],
         ),

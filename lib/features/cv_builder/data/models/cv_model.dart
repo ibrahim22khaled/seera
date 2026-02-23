@@ -75,7 +75,12 @@ class CVModel {
       projs = (json['attachments'] as List).map((e) {
         final title = e['title'] ?? '';
         final url = e['url'] ?? '';
-        return ProjectModel(title: title, role: '', url: url, description: '');
+        return ProjectModel(
+          title: title,
+          role: '',
+          urls: url.isNotEmpty ? [url] : [],
+          description: '',
+        );
       }).toList();
     }
 
@@ -268,21 +273,28 @@ class LanguageModel {
 class ProjectModel {
   final String title;
   final String role;
-  final String url;
+  final List<String> urls;
   final String description;
 
   ProjectModel({
     required this.title,
     required this.role,
-    required this.url,
+    required this.urls,
     required this.description,
   });
 
   factory ProjectModel.fromJson(Map<String, dynamic> json) {
+    List<String> urls = [];
+    if (json['urls'] != null) {
+      urls = List<String>.from(json['urls']);
+    } else if (json['url'] != null && json['url'].toString().isNotEmpty) {
+      urls = [json['url'].toString()];
+    }
+
     return ProjectModel(
       title: json['title'] ?? '',
       role: json['role'] ?? '',
-      url: json['url'] ?? '',
+      urls: urls,
       description: json['description'] ?? '',
     );
   }
@@ -290,7 +302,7 @@ class ProjectModel {
   Map<String, dynamic> toJson() => {
     'title': title,
     'role': role,
-    'url': url,
+    'urls': urls,
     'description': description,
   };
 }

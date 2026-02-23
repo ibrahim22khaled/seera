@@ -199,6 +199,7 @@ class _ManualFormScreenState extends State<ManualFormScreen> {
               context.read<CVBuilderCubit>().updateField(summary: v),
           maxLines: 4,
           validator: (v) => Validator.isNotEmpty(v ?? '') ? null : loc.required,
+          onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
         ),
         const SizedBox(height: 24),
       ],

@@ -51,10 +51,12 @@ class AtsService {
       buffer.writeln('Projects');
       for (final item in data.projects) {
         buffer.writeln('- ${item.title}');
-        if (item.role.isNotEmpty) buffer.writeln('  Role: ${item.role}');
-        if (item.url.isNotEmpty) buffer.writeln('  Link: ${item.url}');
         if (item.description.isNotEmpty)
           buffer.writeln('  ${item.description}');
+        if (item.role.isNotEmpty) buffer.writeln('  Role: ${item.role}');
+        if (item.urls.isNotEmpty) {
+          buffer.writeln('  Links: ${item.urls.join(", ")}');
+        }
       }
       buffer.writeln();
     }

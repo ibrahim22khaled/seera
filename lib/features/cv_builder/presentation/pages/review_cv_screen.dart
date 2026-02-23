@@ -729,7 +729,9 @@ class _ReviewCvScreenState extends State<ReviewCvScreen> {
                 style: const TextStyle(color: Colors.white),
               ),
               subtitle: Text(
-                proj.role.isNotEmpty ? '${proj.role} - ${proj.url}' : proj.url,
+                proj.role.isNotEmpty
+                    ? '${proj.role} - ${proj.urls.join(", ")}'
+                    : proj.urls.join(", "),
                 style: const TextStyle(color: AppTheme.textMuted),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -759,7 +761,9 @@ class _ReviewCvScreenState extends State<ReviewCvScreen> {
     final isEditing = existing != null;
     final titleController = TextEditingController(text: existing?.title ?? '');
     final roleController = TextEditingController(text: existing?.role ?? '');
-    final urlController = TextEditingController(text: existing?.url ?? '');
+    final urlController = TextEditingController(
+      text: existing?.urls.join(', ') ?? '',
+    );
     final descController = TextEditingController(
       text: existing?.description ?? '',
     );
@@ -799,7 +803,11 @@ class _ReviewCvScreenState extends State<ReviewCvScreen> {
                 final newProj = ProjectModel(
                   title: titleController.text,
                   role: roleController.text,
-                  url: urlController.text,
+                  urls: urlController.text
+                      .split(',')
+                      .map((e) => e.trim())
+                      .where((e) => e.isNotEmpty)
+                      .toList(),
                   description: descController.text,
                 );
                 final cubit = context.read<CVBuilderCubit>();

@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:seera/core/services/ai_service.dart';
-import 'package:seera/core/services/mock_gemini_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/chat/presentation/cubit/chat_cubit.dart';
 import 'features/onboarding/presentation/pages/onboarding_screen.dart';
@@ -14,18 +13,17 @@ import 'features/auth/presentation/pages/register_screen.dart';
 import 'features/auth/presentation/pages/forgot_password_screen.dart';
 import 'features/auth/presentation/pages/email_verification_screen.dart';
 import 'features/cv_builder/presentation/pages/download_screen.dart';
+import 'package:seera/features/cv_builder/presentation/pages/manual_form_screen.dart';
 import 'features/cv_builder/presentation/cubit/cv_builder_cubit.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:seera/generated/l10n/app_localizations.dart';
 import 'core/services/locale_cubit.dart';
 import 'core/theme/theme_cubit.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:seera/core/constants/app_constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
@@ -34,56 +32,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Choose the service based on configuration
-    final ChatService aiService;
-    final List<ChatService> availableServices = [];
-
-    final bool useMockMode = dotenv.env['USE_MOCK_MODE'] == 'true';
-    final String groqApiKey = dotenv.env['GROQ_API_KEY'] ?? '';
-    final String openRouterApiKey = dotenv.env['OPEN_ROUTER_API_KEY'] ?? '';
-    final String huggingFaceApiKey = dotenv.env['HUGGING_FACE_API_KEY'] ?? '';
-    final String geminiApiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
-
-    if (useMockMode) {
-      availableServices.add(MockGeminiService());
-    } else {
-      if (groqApiKey.isNotEmpty) {
-        availableServices.add(
-          GroqService(
-            apiKey: groqApiKey,
-            systemPrompt: AppConstants.systemPrompt,
-          ),
-        );
-      }
-      if (openRouterApiKey.isNotEmpty) {
-        availableServices.add(
-          OpenRouterService(
-            apiKey: openRouterApiKey,
-            systemPrompt: AppConstants.systemPrompt,
-          ),
-        );
-      }
-      if (huggingFaceApiKey.isNotEmpty) {
-        availableServices.add(
-          HuggingFaceService(
-            apiKey: huggingFaceApiKey,
-            systemPrompt: AppConstants.systemPrompt,
-          ),
-        );
-      }
-      if (geminiApiKey.isNotEmpty) {
-        // availableServices.add(
-        //   GeminiService(apiKey: geminiApiKey, systemPrompt: _systemPrompt),
-        // );
-      }
-    }
-
-    if (availableServices.isEmpty) {
-      // Fallback to mock or throw error if no keys at all
-      aiService = MockGeminiService();
-    } else {
-      aiService = FallbackChatService(services: availableServices);
-    }
+    // Groq Service is initialized without a hardcoded key.
+    // The key is injected during build using: --dart-define=GROQ_API_KEY=...
+    final ChatService aiService = GroqService(
+      systemPrompt: AppConstants.systemPrompt,
+    );
 
     return MultiBlocProvider(
       providers: [
@@ -118,6 +71,7 @@ class MyApp extends StatelessWidget {
                   '/verify-email': (context) => const EmailVerificationScreen(),
                   '/chat': (context) => const MainScaffold(),
                   '/download': (context) => const DownloadScreen(),
+                  '/manual-form': (context) => const ManualFormScreen(),
                 },
                 debugShowCheckedModeBanner: false,
               );
