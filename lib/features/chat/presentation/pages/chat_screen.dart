@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:seera/core/theme/app_theme.dart';
 import 'package:seera/features/cv_builder/presentation/pages/review_cv_screen.dart';
+import 'package:seera/features/cv_builder/presentation/cubit/cv_builder_cubit.dart';
 import 'package:seera/generated/l10n/app_localizations.dart';
 import '../cubit/chat_cubit.dart';
 import '../widgets/chat_drawer.dart';
@@ -61,7 +62,10 @@ class ChatScreenContent extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
       child: TextButton(
-        onPressed: () => context.read<ChatCubit>().generateCV(l10n),
+        onPressed: () => context.read<ChatCubit>().generateCV(
+          l10n,
+          context.read<CVBuilderCubit>(),
+        ),
         style: TextButton.styleFrom(
           backgroundColor: const Color(0xFF1E293B),
           shape: RoundedRectangleBorder(

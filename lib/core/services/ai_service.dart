@@ -85,7 +85,8 @@ class GroqService implements ChatService {
       "country": "الدولة",
       "city": "المدينة",
       "jobTitle": "المسمى الوظيفي الحالي",
-      "targetCountry": "الدولة المستهدفة للعمل",
+      "linkedin": "رابط لينكد إن",
+      "github": "رابط جيت هاب",
       "summary": "ملخص احترافي",
       "skills": ["مهارة 1", "مهارة 2"],
       "experience": [
@@ -97,18 +98,26 @@ class GroqService implements ChatService {
           "portfolioItems": ["رابط 1", "رابط 2"]
         }
       ],
+      "education": [
+        {
+          "degree": "الدرجة العلمية",
+          "institution": "المؤسسة التعليمية",
+          "dateRange": "الفترة الزمنية"
+        }
+      ],
       "languages": [
         {
           "name": "اللغة",
           "level": "المستوى"
         }
       ],
-      "attachments": []
+      "projects": []
     }
     
     ملاحظات هامة:
     - إذا لم يذكر المستخدم "الملخص المهني" أو "المهارات" في المحادثة، اتركهم فارغين (سيقوم بإضافتهم لاحقاً).
     - استخرج أي روابط أو ملفات ذكرها المستخدم بعد كل خبرة عملية وضعها في قائمة "portfolioItems" الخاصة بتلك الخبرة.
+    - استخرج أي روابط مشاريع عامة وضعها في قائمة "projects" ككائنات تحتوي على (title, role, urls, description).
     ''';
 
     final response = await http.post(

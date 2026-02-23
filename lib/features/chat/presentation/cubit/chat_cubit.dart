@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:seera/core/services/ai_service.dart';
 import 'package:seera/core/services/voice_service.dart';
 import 'package:seera/features/cv_builder/data/models/cv_model.dart';
+import 'package:seera/features/cv_builder/presentation/cubit/cv_builder_cubit.dart';
 import 'package:seera/features/cv_builder/domain/services/pdf_service.dart';
 import 'package:seera/generated/l10n/app_localizations.dart';
 
@@ -256,7 +257,10 @@ class ChatCubit extends Cubit<ChatState> {
     }
   }
 
-  Future<void> generateCV(AppLocalizations l10n) async {
+  Future<void> generateCV(
+    AppLocalizations l10n,
+    CVBuilderCubit cvBuilderCubit,
+  ) async {
     final currentSession = _sessionHandler.currentSession;
 
     if (!_cvHandler.canGenerate(currentSession.messages)) {
@@ -282,6 +286,9 @@ class ChatCubit extends Cubit<ChatState> {
 
     try {
       final cvModel = await _cvHandler.generateCV(currentSession.messages);
+
+      // Sync with CVBuilderCubit so the review screen and manual form have the data
+      cvBuilderCubit.updateCV(cvModel);
 
       emit(
         ChatReview(

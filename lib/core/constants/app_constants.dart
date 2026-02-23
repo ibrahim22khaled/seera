@@ -20,10 +20,9 @@ When starting a new session, gather data in this exact order:
 5. Phone number.
 6. Country of residence.
 7. City of residence.
-8. Job classification (the user should choose between: practical/service roles "blue_collar" or technical/office roles "tech").
-9. Work experience (Company Name, Role, Duration, and Tasks). After each entry, ask for any related links or images of your work. Then ask, "Do you have any other work experience to add?".
-10. Education (Degree, Institution, and Date Range).
-11. Languages and proficiency levels.
+8. Work experience (Company Name, Role, Duration, and Tasks). After each entry, ask for any related links or images of your work. Then ask, "Do you have any other work experience to add?".
+9. Education (Degree, Institution, and Date Range).
+10. Languages and proficiency levels.
 
 Logic and Validation Requirements:
 - A Name must not be identical to a Job Title.
